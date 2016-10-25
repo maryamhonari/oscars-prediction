@@ -47,8 +47,6 @@ class DataPreprocessor:
         with open(self.csv_filename, "rb") as dataset:
             entryreader = csv.reader(dataset, delimiter=',')
             for row in entryreader:
-                # Everything after column 8181 is a duplicate. File still needs cleaning up.
-                row = row[:8182]
                 if counter == 0:
                     # The first row is column headings (special treatment).
                     for column in row:
