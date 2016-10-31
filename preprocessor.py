@@ -19,6 +19,7 @@ class DataPreprocessor:
     class_label_index = []
     ignore = ['genres', 'plot_keywords']
     csv_filename = ""
+    column_headers = []
 
     def __init__(self, label_column_names_list, column_names_to_ignore_list,
                  csv_filename):
@@ -44,11 +45,14 @@ class DataPreprocessor:
         """
         # Load data:
         counter = 0
+        headers_processed = False
+        temp_headers = []
         with open(self.csv_filename, "rb") as dataset:
             entryreader = csv.reader(dataset, delimiter=',')
             for row in entryreader:
                 if counter == 0:
                     # The first row is column headings (special treatment).
+                    temp_headers = list(row)
                     for column in row:
                         self.colmap[column] = row.index(column)
                 else:
@@ -66,5 +70,26 @@ class DataPreprocessor:
                     for index, value in enumerate(row):
                         if index not in skippable_attributes:
                             data_row.append(value)
+                            if not headers_processed:
+                                self.column_headers.append(temp_headers[index])
+                    headers_processed = True
                     self.features.append(data_row)
                 counter += 1
+
+    def split_features(self):
+        """
+        Splits the already preprocessed feature matrix vertically instead of
+        horizontally, so that you get a single list per feature, perfectly
+        aligned with the class labels. Requires that the features already be
+        preprocessed.
+        """
+        # Initialize the result arrays:
+        result = []
+        for feature in self.features[0]:
+            result.append([])
+
+        for index1, value1 in enumerate(self.features):
+            for index2, value2 in enumerate(self.features[index1]):
+                result[index2].append(value2)
+
+        return result
