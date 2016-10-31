@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
 import csv
+import random
+import numbers
+import decimal
+from sklearn import preprocessing
 
 
 class DataPreprocessor:
@@ -20,6 +24,8 @@ class DataPreprocessor:
     ignore = ['genres', 'plot_keywords']
     csv_filename = ""
     column_headers = []
+    features_numerical = []
+    labels_numerical = []
 
     def __init__(self, label_column_names_list, column_names_to_ignore_list,
                  csv_filename):
@@ -93,3 +99,37 @@ class DataPreprocessor:
                 result[index2].append(value2)
 
         return result
+
+    def numerify(self):
+        """
+        Converts all non-numerical attributes (features and labels) into
+        numerical attributes.
+        """
+        # For features:
+        temp = self.split_features()
+        for i in range(len(temp)):
+            self.features_numerical.append([])
+        for index, feature_vector in enumerate(temp):
+            test_index = 0
+            if (feature_vector[test_index] == ''):
+                test_index = random.randrange(1, len(feature_vector))
+            if (not isinstance(feature_vector[test_index], numbers.Number) and
+                    not isinstance(feature_vector[test_index],
+                                   decimal.Decimal)):
+                encoder = preprocessing.LabelEncoder()
+                encoder.fit(feature_vector)
+                self.features_numerical[index] = encoder.transform(
+                        feature_vector)
+        # Rearrange features into rows:
+        self.features_numerical = map(list, zip(*self.features_numerical))
+        # For labels:
+        for label_vector in self.labels:
+            test_index = 0
+            if (label_vector[test_index] == ''):
+                test_index = random.randrange(1, len(label_vector))
+            if (not isinstance(label_vector[test_index], numbers.Number) and
+                    not isinstance(label_vector[test_index],
+                                   decimal.Decimal)):
+                encoder = preprocessing.LabelEncoder()
+                encoder.fit(label_vector)
+                self.labels_numerical.append(encoder.transform(label_vector))
