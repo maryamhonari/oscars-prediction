@@ -1,3 +1,2 @@
-Final.csv
-final_dataset_no_duplicates.csv
+*.csv
 *.pyc
