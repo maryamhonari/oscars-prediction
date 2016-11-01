@@ -133,3 +133,17 @@ class DataPreprocessor:
                 encoder = preprocessing.LabelEncoder()
                 encoder.fit(label_vector)
                 self.labels_numerical.append(encoder.transform(label_vector))
+
+    def add_feature(self, new_feat):
+        """
+        Adds a new list representing a feature and its values to the matrix of
+        existing features. The list must be of a length equal to that of the
+        total tuples in the dataset and aligned with it.
+        """
+        if not isinstance(new_feat, list):
+            raise TypeError('Invalid parameter type. Expecting type: list')
+        if len(new_feat) != len(self.features):
+            raise IndexError('Invalid list length')
+        # Add the feature values to the tuples (assuming alignment)
+        for index1, vector1 in enumerate(self.features):
+            self.features[index1].append(new_feat[index1])
