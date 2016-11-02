@@ -4,6 +4,7 @@ import csv
 import random
 import numbers
 import decimal
+import math
 from sklearn import preprocessing
 
 
@@ -26,6 +27,8 @@ class DataPreprocessor:
     column_headers = []
     features_numerical = []
     labels_numerical = []
+    test_features = []
+    test_labels = []
 
     def __init__(self, label_column_names_list, column_names_to_ignore_list,
                  csv_filename):
@@ -71,11 +74,12 @@ class DataPreprocessor:
                                             skippable_attributes]
                     for class_label in self.class_labels:
                         label_index = self.class_labels.index(class_label)
-                        column_index = row[self.colmap[class_label]]
-                        self.labels[label_index].append(column_index)
+                        column_value = row[self.colmap[class_label]]
+                        self.labels[label_index].append(
+                                self.process_value(column_value))
                     for index, value in enumerate(row):
                         if index not in skippable_attributes:
-                            data_row.append(value)
+                            data_row.append(self.process_value(value))
                             if not headers_processed:
                                 self.column_headers.append(temp_headers[index])
                     headers_processed = True
@@ -120,6 +124,8 @@ class DataPreprocessor:
                 encoder.fit(feature_vector)
                 self.features_numerical[index] = encoder.transform(
                         feature_vector)
+            else:
+                self.features_numerical[index] = feature_vector
         # Rearrange features into rows:
         self.features_numerical = map(list, zip(*self.features_numerical))
         # For labels:
@@ -133,12 +139,16 @@ class DataPreprocessor:
                 encoder = preprocessing.LabelEncoder()
                 encoder.fit(label_vector)
                 self.labels_numerical.append(encoder.transform(label_vector))
+            else:
+                self.labels_numerical.append(label_vector)
 
     def add_feature(self, new_feat):
         """
         Adds a new list representing a feature and its values to the matrix of
         existing features. The list must be of a length equal to that of the
         total tuples in the dataset and aligned with it.
+        Parameters:
+            new_feat - The new feature vector to be added.
         """
         if not isinstance(new_feat, list):
             raise TypeError('Invalid parameter type. Expecting type: list')
@@ -147,3 +157,73 @@ class DataPreprocessor:
         # Add the feature values to the tuples (assuming alignment)
         for index1, vector1 in enumerate(self.features):
             self.features[index1].append(new_feat[index1])
+
+    def create_test_set(self, test_data_percent, label_index, balanced=False):
+        """
+        Samples a test set out of the existing feature and label sets without
+        replacement. The size of the testset is the percentage given of the
+        original dataset rounded up to the nearest tuple. If balanced, the
+        distribution of the labels will be mirrored in the test set, random
+        otherwise. The extraction occurs on the numerical sets.
+        Parameters:
+            test_data_percent - The percentage (0-1) of data to be used from
+            the original dataset.
+            label_index - The index of the label vector to be tested.
+            balanced - Boolean indicating if the distribution should be
+            mirrored.
+        """
+        test_data_size = math.ceil(test_data_percent * len(self.features))
+        indexes = []  # Houses indices for test tuples.
+        if not balanced:
+            indexes = random.sample(range(0, len(self.features_numerical)),
+                                    test_data_size)
+        else:
+            # Get unique class distributions:
+            dist_values = dict()
+            dist_indices = dict()
+            for index, label in enumerate(self.labels_numerical[label_index]):
+                if label in dist_values:
+                    dist_values[label] += 1
+                    dist_indices[label].append(index)
+                else:
+                    dist_values[label] = 1
+                    dist_indices[label] = [index]
+            for key, count in dist_values.iteritems():
+                dist_values[key] = int(math.ceil(test_data_percent *
+                                       len(dist_indices[key])))
+                indexes.extend(random.sample(range(0, len(dist_indices[key])),
+                                             dist_values[key]
+                                             )
+                               )
+
+    # Helper Functions:
+    def is_float(self, value):
+        try:
+            float(value)
+            return True
+        except:
+            return False
+
+    def is_int(self, value):
+        try:
+            int(value)
+            return True
+        except:
+            return False
+
+    def is_boolean(self, value):
+        try:
+            bool(value)
+            return True
+        except:
+            return False
+
+    def process_value(self, value):
+        if self.is_int(value):
+            return int(value)
+        elif self.is_boolean(value):
+            return bool(value)
+        elif self.is_float(value):
+            return float(value)
+        else:
+            return value
