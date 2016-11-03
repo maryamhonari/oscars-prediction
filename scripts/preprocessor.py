@@ -125,7 +125,7 @@ class DataPreprocessor:
                 self.features_numerical[index] = encoder.transform(
                         feature_vector)
             else:
-                self.features_numerical[index] = feature_vector
+                self.features_numerical[index] = list(feature_vector)
         # Rearrange features into rows:
         self.features_numerical = map(list, zip(*self.features_numerical))
         # For labels:
@@ -140,7 +140,7 @@ class DataPreprocessor:
                 encoder.fit(label_vector)
                 self.labels_numerical.append(encoder.transform(label_vector))
             else:
-                self.labels_numerical.append(label_vector)
+                self.labels_numerical.append(list(label_vector))
 
     def add_feature(self, new_feat):
         """
@@ -195,6 +195,14 @@ class DataPreprocessor:
                                              dist_values[key]
                                              )
                                )
+            # Sort the indexes so that removing the items is painless:
+            indexes.sort(reverse=True)
+            for index in indexes:
+                self.test_features.append(self.features_numerical[index])
+                self.test_labels.append(
+                                self.labels_numerical[label_index][index])
+                del self.features_numerical[index]
+                del self.labels_numerical[label_index][index]
 
     # Helper Functions:
     def is_float(self, value):
