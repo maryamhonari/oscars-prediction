@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
+import csv
 from preprocessor import DataPreprocessor
 from sklearn.cluster import KMeans
 from sklearn import metrics
+from sklearn.ensemble import ExtraTreesClassifier
 
 """
 Applies clustering algorithms to the movie dataset in order to discover
@@ -10,7 +12,7 @@ meaningful relationships between data tuples.
 """
 
 # Author: Omar Elazhary <omazhary@gmail.com>
-# License: None
+# License: MIT
 
 preprocessor = DataPreprocessor(['Nominated Best Picture',
                                 'Won Best Picture', 'Num of Awards'],
@@ -24,7 +26,6 @@ preprocessor.numerify()
 
 preprocessor.create_test_set(0.3, 0, True)
 
-"""
 km = KMeans(n_clusters=2, init='k-means++', max_iter=5000, n_init=1,
         verbose=False)
 
@@ -45,4 +46,3 @@ print("Adjusted Rand-Index: %0.3f"
 print("Silhouette Coefficient: %0.3f"
         % metrics.silhouette_score(preprocessor.labels_numerical[0],
             km.labels_))
-"""
