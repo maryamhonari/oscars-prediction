@@ -5,7 +5,11 @@ import random
 import numbers
 import decimal
 import math
+import numpy as np
 from sklearn import preprocessing
+
+# Author: Omar Elazhary <omazhary@gmail.com>
+# License: MIT
 
 
 class DataPreprocessor:
@@ -141,6 +145,11 @@ class DataPreprocessor:
                 self.labels_numerical.append(encoder.transform(label_vector))
             else:
                 self.labels_numerical.append(list(label_vector))
+        # Do cleanup (deal with missing values):
+        janitor = preprocessing.Imputer(missing_values=np.NaN,
+                                        strategy='most_frequent')
+        self.features_numerical = janitor.fit_transform(
+                self.features_numerical)
 
     def add_feature(self, new_feat):
         """
@@ -231,5 +240,7 @@ class DataPreprocessor:
             return int(value)
         elif self.is_float(value):
             return float(value)
+        elif value == '':
+            return np.NaN
         else:
             return value
