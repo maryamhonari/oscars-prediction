@@ -229,8 +229,6 @@ class DataPreprocessor:
     def process_value(self, value):
         if self.is_int(value):
             return int(value)
-        elif self.is_boolean(value):
-            return bool(value)
         elif self.is_float(value):
             return float(value)
         else:
