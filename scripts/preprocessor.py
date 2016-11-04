@@ -210,8 +210,11 @@ class DataPreprocessor:
                 self.test_features.append(self.features_numerical[index])
                 self.test_labels.append(
                                 self.labels_numerical[label_index][index])
-                del self.features_numerical[index]
-                del self.labels_numerical[label_index][index]
+                self.features_numerical = np.delete(
+                        self.features_numerical, index
+                        )
+                self.labels_numerical[label_index] = np.delete(
+                        self.labels_numerical[label_index], index)
 
     # Helper Functions:
     def is_float(self, value):
