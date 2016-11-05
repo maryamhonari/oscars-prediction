@@ -3,7 +3,10 @@ from sklearn import svm
 import csv
 import numpy as np
 import time
+import math
 from sklearn.metrics import f1_score
+
+
 
 features = []
 
@@ -35,6 +38,21 @@ features = np.array(features).astype(float)
 labels = np.array(labels)
 features = np.array(features)
 
+featIdxMap = dict()
+for i in range(len(featNames)):
+    featIdxMap[featNames[i]] = i
+
+correlation = []
+
+with open("feature_correlation_results.csv") as corr:
+    entryreader = csv.reader(corr, delimiter=',')
+    for row in entryreader:
+        correlation.append(row)
+
+
+
+
+
 titleYearIdx = -1
 
 for i in range(len(featNames)):
@@ -55,22 +73,14 @@ for i in range(len(features)):
 print len(trainRows) / len(features) , len(testRows) / len(features)
 
 favoriteCols = []
-counter = 0
 
-for i in range(len(featNames)):
-    if 'keyword' not in featNames[i]:
-       if 'name' not in featNames[i]:
-        favoriteCols.append(i)
-    else:
-        sum = 0
-        for j in range(len(features)):
-            sum += float(features[j][i])
-        if sum >= 30.0:
-            favoriteCols.append(i)
-            counter += 1
+for i in range(1, len(correlation)):
+    if correlation[i][0] in featIdxMap:
+        if math.fabs(float(correlation[i][1])) > 0.1:
+            print correlation[i][0]
+            favoriteCols.append(featIdxMap[correlation[i][0]])
 
 print 'favoritCols = ', len(favoriteCols)
-print 'used keywords = ', counter
 
 start_time = time.time()
 
@@ -96,7 +106,7 @@ print 'test length = ', len(testRows)
 #clf = svm.SVC(kernel='linear', cache_size=1000)
 #clf = svm.SVC(C=10)
 clf=svm.SVC(C=1.0, kernel='poly', degree=3, gamma='auto', coef0=0.0, shrinking=True,
-          probability=False, tol=0.001, cache_size=200, class_weight=None, verbose=True, max_iter=-1,
+          probability=False, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=1000,
           decision_function_shape=None, random_state=None)
 
 print 'here'
@@ -129,10 +139,7 @@ y = labels[testRows, 0]
 print '======================'
 
 for i in range(len(y_pred)):
-    if y_pred[i] == 1:
-        print '1 on = ', testRows[i] + 1
-    elif y_pred[i] == 0:
-        print '0 on = ', testRows[i] + 1
+    print (testRows[i] + 2), ' = ', y_pred[i], ' ', y_test[i]
 
 
 #Taken from Calob's lab
