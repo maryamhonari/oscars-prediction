@@ -6,6 +6,7 @@ import numbers
 import decimal
 import math
 import numpy as np
+import gc
 from sklearn import preprocessing
 
 # Author: Omar Elazhary <omazhary@gmail.com>
@@ -149,7 +150,7 @@ class DataPreprocessor:
         janitor = preprocessing.Imputer(missing_values=np.NaN,
                                         strategy='most_frequent')
         self.features_numerical = janitor.fit_transform(
-                self.features_numerical)
+                self.features_numerical).tolist()
 
     def add_feature(self, new_feat):
         """
@@ -210,11 +211,8 @@ class DataPreprocessor:
                 self.test_features.append(self.features_numerical[index])
                 self.test_labels.append(
                                 self.labels_numerical[label_index][index])
-                self.features_numerical = np.delete(
-                        self.features_numerical, index
-                        )
-                self.labels_numerical[label_index] = np.delete(
-                        self.labels_numerical[label_index], index)
+                del self.features_numerical[index]
+                del self.labels_numerical[label_index][index]
 
     # Helper Functions:
     def is_float(self, value):
