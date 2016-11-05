@@ -4,149 +4,120 @@ import csv
 import numpy as np
 import time
 import math
-from sklearn.metrics import f1_score
 
+#converts a csv file to 2D array
+def csvToArray(filename):
+    ret = []
+    with open(filename) as x:
+        entryreader = csv.reader(x, delimiter=',')
+        for row in entryreader:
+            ret.append(row)
+    return ret
 
-
-features = []
-
-with open("features.csv") as feat:
-    entryreader = csv.reader(feat, delimiter=',')
-    for row in entryreader:
-        features.append(row)
-
+features = csvToArray("features.csv")
 featNames = features[0]
 features = features[1:]
-
 print len(features), len(features[0])
 
-labels = []
-
-with open("labels.csv") as lbl:
-    entryreader = csv.reader(lbl, delimiter=',')
-    for row in entryreader:
-        labels.append(row)
-
+labels = csvToArray("labels.csv")
 labelNames = labels[0]
 labels = labels[1:]
-
 print len(labels), len(labels[0])
 
 labels = np.array(labels).astype(int)
 features = np.array(features).astype(float)
 
-labels = np.array(labels)
-features = np.array(features)
-
 featIdxMap = dict()
 for i in range(len(featNames)):
     featIdxMap[featNames[i]] = i
 
-correlation = []
-
-with open("feature_correlation_results.csv") as corr:
-    entryreader = csv.reader(corr, delimiter=',')
-    for row in entryreader:
-        correlation.append(row)
-
-
-
-
-
+#getting title_year column number
 titleYearIdx = -1
-
 for i in range(len(featNames)):
     if featNames[i] == 'title_year':
         titleYearIdx = i
-
 print 'year index = ', titleYearIdx
 
+labelOfInterest = 1 #0 means nominee , 1 means winner (for best picture)
+
+#choosing train/test instances based on title_year
 trainRows = []
 testRows = []
 
-for i in range(len(features)):
-    if float(features[i][titleYearIdx]) > 2010:
-        testRows.append(i)
-    else:
-        trainRows.append(i)
+nomineeSum = 0
 
-print len(trainRows) / len(features) , len(testRows) / len(features)
+for i in range(len(features)):
+    if labelOfInterest == 0:
+        if float(features[i][titleYearIdx]) > 2010:
+            testRows.append(i)
+        else:
+            trainRows.append(i)
+    elif labelOfInterest == 1:
+        if labels[i][0] == 1:
+            nomineeSum += 1
+            #if float(features[i][titleYearIdx]) > 2010:
+            if int(math.floor(features[i][titleYearIdx])) % 4 == 0:
+                testRows.append(i)
+            else:
+                trainRows.append(i)
+
+
+#prints percentage of train and test
+if labelOfInterest == 0:
+    print len(trainRows) / len(features) , len(testRows) / len(features)
+elif labelOfInterest == 1:
+    print len(trainRows) / nomineeSum, len(testRows) / nomineeSum
+
+
+#feature selection based on correlation values
+correlation = csvToArray("feature_correlation_results.csv")
 
 favoriteCols = []
+favoriteColsNames = []
 
 for i in range(1, len(correlation)):
     if correlation[i][0] in featIdxMap:
-        if math.fabs(float(correlation[i][1])) > 0.1:
-            print correlation[i][0]
+        if math.fabs(float(correlation[i][1 + labelOfInterest])) > 0.1:
+            # print correlation[i][0]
             favoriteCols.append(featIdxMap[correlation[i][0]])
+            favoriteColsNames.append(correlation[i][0])
 
 print 'favoritCols = ', len(favoriteCols)
 
+print favoriteColsNames
+
 start_time = time.time()
 
-#clf = svm.SVC(kernel='linear')
 
-#### temporary customization of test and train
+# making test set half positive and half negative
+# removes some of negative instances
+# positive could mean that the instance has been nominated for OR has won best picture!
+
 tmp = []
 for i in range(len(testRows)):
-    if labels[testRows[i]][0] == 1:
+    if labels[testRows[i]][labelOfInterest] == 1:
         tmp.append(testRows[i])
 
-posNo = len(tmp)
-
+positiveNum = len(tmp)
 for i in range(len(testRows)):
-    if labels[testRows[i]][0] == 0 and posNo > 0:
+    if labels[testRows[i]][labelOfInterest] == 0 and positiveNum > 0:
         tmp.append(testRows[i])
-        posNo -= 1
+        positiveNum -= 1
 
 testRows = tmp
 
 print 'test length = ', len(testRows)
 
-#clf = svm.SVC(kernel='linear', cache_size=1000)
-#clf = svm.SVC(C=10)
-clf=svm.SVC(C=1.0, kernel='poly', degree=3, gamma='auto', coef0=0.0, shrinking=True,
-          probability=False, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=1000,
-          decision_function_shape=None, random_state=None)
-
-print 'here'
-
-#(tf[:,[91,1063]])[[0,3,4],:]
-clf.fit((features[trainRows, :])[:, favoriteCols], labels[trainRows, 0])
-
-print 'there'
-
+#fitting SVM Classifier to data
+clf = svm.SVC(kernel='poly', degree=3, max_iter=1000000)
+clf.fit((features[trainRows, :])[:, favoriteCols], labels[trainRows, labelOfInterest])
 y_pred = clf.predict((features[testRows, :])[:, favoriteCols])
-y_test = labels[testRows, 0]
+y_test = labels[testRows, labelOfInterest]
+acc = np.mean((y_test-y_pred)==0)
 
-print 'accuracy = %f' %(np.mean((y_test-y_pred)==0))
-
-
-#score = clf.score((features[testRows, :])[:, favoriteCols], labels[testRows, 0])
-#print 'fscore = %s' % (f1_score(y_true, y_pred, average='macro') )
-
-
-
-print("--- %s seconds ---" % (time.time() - start_time))
-
-
-y = labels[testRows, 0]
-
-# for i in range(len(y)):
-#     if y[i] == '1':
-#         print testRows[i]
-#
+#prints actual label and predicted label to compare
 print '======================'
-
 for i in range(len(y_pred)):
     print (testRows[i] + 2), ' = ', y_pred[i], ' ', y_test[i]
 
-
-#Taken from Calob's lab
-# for i in range(1, 101):
-# 	C = i/10.0
-# 	clf = svm.SVC(C=C)
-# 	clf = clf.fit(data, categories)
-#
-# 	score = clf.score(test, ans)
-# 	print 'C = %.2f: %s' % (C, score)
+print 'accuracy = %f' %(np.mean((y_test-y_pred)==0))
