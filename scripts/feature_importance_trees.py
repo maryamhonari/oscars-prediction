@@ -13,8 +13,9 @@ Applies sklearn's library to find out which features are the most important.
 
 preprocessor = DataPreprocessor(['Nominated Best Picture',
                                 'Won Best Picture', 'Num of Awards'],
-                                ['genres', 'plot_keywords'],
-                                'final_dataset_no_duplicates.csv')
+#                                ['genres', 'plot_keywords'],
+                                [],
+                                'movies_original.csv')
 preprocessor.preprocess()
 
 preprocessor.add_feature(preprocessor.labels[0])
@@ -33,7 +34,7 @@ result[0].extend(preprocessor.column_headers)
 for index, label_vector in enumerate(preprocessor.labels_numerical):
     model.fit(preprocessor.features_numerical, label_vector)
     result[index + 1].extend(model.feature_importances_)
-with open('feature_importance.csv', 'wb') as outcsvfile:
+with open('feature_importance_original.csv', 'wb') as outcsvfile:
     outwriter = csv.writer(outcsvfile, delimiter=',')
     for index, vector in enumerate(result[0]):
         new_row = []
