@@ -1,20 +1,17 @@
 #!/usr/bin/python
 
-import csv
 from preprocessor import DataPreprocessor
-from sklearn.cluster import KMeans
-from sklearn import metrics
-from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.linear_model import Perceptron
 
 """
-Applies clustering algorithms to the movie dataset in order to discover
-meaningful relationships between data tuples.
+Uses a perceptron in order to determine if a movie gets nominated.
 """
 
 # Author: Omar Elazhary <omazhary@gmail.com>
 # License: MIT
 
-# Preprocess data:
+# Preprocess the data:
+
 preprocessor = DataPreprocessor(['Nominated Best Picture',
                                 'Won Best Picture', 'Num of Awards'],
                                 ['genres', 'plot_keywords', 'movie_imdb_link',
@@ -29,25 +26,25 @@ preprocessor = DataPreprocessor(['Nominated Best Picture',
                                 'movies_original.csv')
 preprocessor.preprocess()
 
-preprocessor.add_feature(preprocessor.labels[0])
-
 preprocessor.numerify()
 
-# Create test set:
+# Create the test set:
+
 preprocessor.create_test_set(0.3, 0, True)
 
-# Start clustering and CV:
-km = KMeans(n_clusters=2, init='k-means++', max_iter=5000, n_init=2,
-        verbose=False)
-km.fit_predict(preprocessor.features_numerical)
+# Perform cross-validation:
 
-# Statisitics about my clusters:
-print("Homogeneity: %0.3f" % metrics.homogeneity_score(
-    preprocessor.labels_numerical[0], km.labels_))
-print("Completeness: %0.3f" % metrics.completeness_score(
-    preprocessor.labels_numerical[0] , km.labels_))
-print("V-Measure: %0.3f" % metrics.v_measure_score(
-    preprocessor.labels_numerical[0], km.labels_))
+clf = Perceptron()
+clf = clf.fit(preprocessor.features_numerical,
+              preprocessor.labels_numerical[0])
 
-# Testing:
-print km.score(preprocessor.test_features)
+"""
+scores = cross_validation.cross_val_score(clf, preprocessor.features_numerical,
+        preprocessor.labels_numerical[2], cv=10)
+
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+"""
+
+score = clf.score(preprocessor.test_features, preprocessor.test_labels)
+
+print("Accuracy after testing (no CV): %3.2f%%") % (score * 100)
