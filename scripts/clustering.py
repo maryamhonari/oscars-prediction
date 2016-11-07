@@ -14,35 +14,40 @@ meaningful relationships between data tuples.
 # Author: Omar Elazhary <omazhary@gmail.com>
 # License: MIT
 
+# Preprocess data:
 preprocessor = DataPreprocessor(['Nominated Best Picture',
                                 'Won Best Picture', 'Num of Awards'],
-                                ['genres', 'plot_keywords'],
-                                'final_dataset_no_duplicates.csv')
+                                ['genres', 'plot_keywords', 'movie_imdb_link',
+                                    'director_name', 'actor_3_facebook_likes',
+                                    'actor_2_name', 'actor_1_facebook_likes',
+                                    'actor_1_name', 'movie_title',
+                                    'cast_total_facebook_likes',
+                                    'actor_3_name', 'facenumber_in_poster',
+                                    'language', 'country', 'content_rating',
+                                    'budget', 'actor_2_facebook_likes',
+                                    'aspect_ratio'],
+                                'movies_original.csv')
 preprocessor.preprocess()
 
 preprocessor.add_feature(preprocessor.labels[0])
 
 preprocessor.numerify()
 
+# Create test set:
 preprocessor.create_test_set(0.3, 0, True)
 
-km = KMeans(n_clusters=2, init='k-means++', max_iter=5000, n_init=1,
+# Start clustering and CV:
+km = KMeans(n_clusters=2, init='k-means++', max_iter=5000, n_init=2,
         verbose=False)
-
 km.fit_predict(preprocessor.features_numerical)
 
-print km.labels_
-print preprocessor.labels_numerical[0]
-
+# Statisitics about my clusters:
 print("Homogeneity: %0.3f" % metrics.homogeneity_score(
     preprocessor.labels_numerical[0], km.labels_))
 print("Completeness: %0.3f" % metrics.completeness_score(
     preprocessor.labels_numerical[0] , km.labels_))
 print("V-Measure: %0.3f" % metrics.v_measure_score(
     preprocessor.labels_numerical[0], km.labels_))
-print("Adjusted Rand-Index: %0.3f"
-        % metrics.adjusted_rand_score(preprocessor.labels_numerical[0],
-            km.labels_))
-print("Silhouette Coefficient: %0.3f"
-        % metrics.silhouette_score(preprocessor.labels_numerical[0],
-            km.labels_))
+
+# Testing:
+print km.score(preprocessor.test_features)
