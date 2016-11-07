@@ -17,24 +17,6 @@ class DataPreprocessor:
     """This class transforms your csv files into inputs suitable for use with
     scikit-learn."""
 
-    # Class variables
-    features = []
-    colmap = dict()
-    class_labels = [
-        'Nominated Best Picture',
-        'Won Best Picture',
-        'Num of Awards'
-    ]
-    labels = []
-    class_label_index = []
-    ignore = ['genres', 'plot_keywords']
-    csv_filename = ""
-    column_headers = []
-    features_numerical = []
-    labels_numerical = []
-    test_features = []
-    test_labels = []
-
     def __init__(self, label_column_names_list, column_names_to_ignore_list,
                  csv_filename):
         """
@@ -45,6 +27,22 @@ class DataPreprocessor:
             column_names_to_ignore_list - A list of column names to ignore.
             csv_filename - The name of the source csv file.
         """
+        # Class variables
+        self.features = []
+        self.colmap = dict()
+        self.class_labels = [
+            'Nominated Best Picture',
+            'Won Best Picture',
+            'Num of Awards'
+        ]
+        self.labels = []
+        self.class_label_index = []
+        self.csv_filename = ""
+        self.column_headers = []
+        self.features_numerical = []
+        self.labels_numerical = []
+        self.test_features = []
+        self.test_labels = []
         self.csv_filename = csv_filename
         self.class_labels = label_column_names_list
         self.ignore = column_names_to_ignore_list
@@ -90,6 +88,7 @@ class DataPreprocessor:
                     headers_processed = True
                     self.features.append(data_row)
                 counter += 1
+            dataset.close()
 
     def split_features(self):
         """
