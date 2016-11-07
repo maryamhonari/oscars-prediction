@@ -13,8 +13,7 @@ Applies sklearn's library to find out which features are the most important.
 
 preprocessor = DataPreprocessor(['Nominated Best Picture',
                                 'Won Best Picture', 'Num of Awards'],
-#                                ['genres', 'plot_keywords'],
-                                [],
+                                ['genres', 'plot_keywords'],
                                 'movies_original.csv')
 preprocessor.preprocess()
 
