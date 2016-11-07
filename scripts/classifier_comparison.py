@@ -51,13 +51,13 @@ prep_awards.create_test_set(0.3, 2, True)
 
 # Prepare Classifiers:
 classifiers_nomination = [
-                Perceptron(),
+                Perceptron(penalty='elasticnet'),
         ]
 classifiers_win = [
-                Perceptron(),
+                Perceptron(penalty='elasticnet'),
         ]
 regressors = [
-                LinearRegression(),
+                LinearRegression(normalize=True),
         ]
 
 # Run training and cross-validation:
