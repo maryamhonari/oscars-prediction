@@ -84,7 +84,7 @@ for reg in regressors:
           % (type(reg).__name__, scores.mean(), scores.std() * 2))
 
 # Run testing:
-print("Testing against test set...")
+print("### Testing against random test set...")
 for clf in classifiers_nomination:
     clf = clf.fit(prep_nom.features_numerical, prep_nom.labels_numerical[0])
     score = clf.score(prep_nom.test_features, prep_nom.test_labels)
