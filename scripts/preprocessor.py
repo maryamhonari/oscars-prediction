@@ -61,6 +61,9 @@ class DataPreprocessor:
         counter = 0
         headers_processed = False
         temp_headers = []
+        skippable_attributes = []
+        should_skip = []
+
         with open(self.csv_filename, "rb") as dataset:
             entryreader = csv.reader(dataset, delimiter=',')
             for row in entryreader:
@@ -69,24 +72,36 @@ class DataPreprocessor:
                     temp_headers = list(row)
                     for column in row:
                         self.colmap[column] = row.index(column)
-                else:
-                    # Need to separate features from ignored and class label
-                    # fields.
-                    data_row = []
+
                     skippable_attributes = list(self.ignore)
                     skippable_attributes.extend(self.class_labels)
                     skippable_attributes = [self.colmap[x] for x in
                                             skippable_attributes]
+
+                    should_skip = [0] * len(temp_headers)
+                    for x in range(len(skippable_attributes)):
+                        should_skip[skippable_attributes[x]] = 1
+
+                else:
+                    # Need to separate features from ignored and class label
+                    # fields.
+                    data_row = []
+
                     for class_label in self.class_labels:
                         label_index = self.class_labels.index(class_label)
                         column_value = row[self.colmap[class_label]]
                         self.labels[label_index].append(
                                 self.process_value(column_value))
+
+                    # print 'here'
                     for index, value in enumerate(row):
-                        if index not in skippable_attributes:
+                        # if index not in skippable_attributes:
+                        if should_skip[index] == 0:
                             data_row.append(self.process_value(value))
                             if not headers_processed:
                                 self.column_headers.append(temp_headers[index])
+
+                    # print 'there'
                     headers_processed = True
                     self.features.append(data_row)
                 counter += 1
