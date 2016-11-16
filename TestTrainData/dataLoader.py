@@ -32,8 +32,8 @@ label_test = np.array(label_test)[1:, :].astype(int)
 
 
 ####################### Save important features before scaling ###########
-train_years = feat_train[:, feature_names.index('title_year')]
-test_years = feat_test[:, feature_names.index('title_year')]
+train_years = np.copy(feat_train[:, feature_names.index('title_year')])
+test_years = np.copy(feat_test[:, feature_names.index('title_year')])
 print train_years, test_years
 
 ################# Do scaling if you need it ###################
