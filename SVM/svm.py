@@ -2,14 +2,18 @@ from __future__ import division
 from sklearn import svm
 import csv
 import numpy as np
-import time
 import math
-from sklearn.metrics import explained_variance_score
 from sklearn import preprocessing
 from sklearn import cross_validation
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score
+from preprocessor import DataPreprocessor
+from enum import Enum
 
+class Label(Enum):
+    Nominee = 0
+    Winner = 1
+    NumOfAwards = 2
 
 #converts a csv file to 2D array
 def csvToArray(filename):
@@ -20,129 +24,123 @@ def csvToArray(filename):
             ret.append(row)
     return ret
 
-def getTrainTestRowsAndCols(labelOfInterest, titleYearIdx):
+def writeCSV(data, header, fileName):
+    all = []
+    header = np.array(header).tolist()
+    data = np.array(data).tolist()
+
+    all.append(header)
+    for i in range(len(data)):
+        all.append(data[i])
+
+    with open(fileName + '.csv', 'wb') as f:
+        writer = csv.writer(f)
+        writer.writerows(all)
+
+def getCols(labelOfInterest=0):
+
     """
 
     :param labelOfInterest: #0 means nominee , 1 means winner (for best picture), 2 means number of awards
     :return:
     """
-    trainRows = []
-    testRows = []
-
-    for i in range(len(features)):
-        if labelOfInterest != 1:
-            if int(math.floor(features[i][titleYearIdx])) % 4 == 0:
-                testRows.append(i)
-            else:
-                trainRows.append(i)
-        else:
-            if labels[i][0] == 1:
-                if int(math.floor(features[i][titleYearIdx])) % 4 == 0:
-                    testRows.append(i)
-                else:
-                    trainRows.append(i)
-
-    # prints percentage of train and test
-    print len(trainRows) / len(features), len(testRows) / len(features)
 
     # feature selection based on correlation values
     correlation = csvToArray("feature_correlation_results.csv")
 
-    favoriteCols = []
-    favoriteColsNames = []
+    cols = []
+    colsNames = []
 
     threshold = 0.1
     for i in range(1, len(correlation)):
-        if labelOfInterest == 2 and ('Won' in correlation[i][0]):  # we should ignore this when predicting num of awards
+        curName = correlation[i][0]
+        if labelOfInterest == Label.NumOfAwards and ('Won' in curName):  # we should ignore this when predicting num of awards
             threshold = 0.1
             continue
 
-        if labelOfInterest == 1 and ('Won' in correlation[i][0]):
+        if labelOfInterest == Label.Winner and ('Won' in curName):
             threshold = 0.1
             continue
 
-        if labelOfInterest == 0 and (('Won' in correlation[i][0])):
+        if labelOfInterest == Label.Nominee and (('Won' in curName)):
             threshold = 0.1
             continue
 
-        if correlation[i][0] in featIdxMap:
-            if math.fabs(float(correlation[i][1 + labelOfInterest])) > threshold:
-                # print correlation[i][0]
-                favoriteCols.append(featIdxMap[correlation[i][0]])
-                favoriteColsNames.append(correlation[i][0])
+        if curName in feature_names:
+            if math.fabs(float(correlation[i][1 + labelOfInterest.value])) > threshold:
+                cols.append(feature_names.index(curName))
+                colsNames.append(curName)
 
-    print 'favoritCols = ', len(favoriteCols)
+    print 'favoritCols = ', len(cols)
 
-    print favoriteColsNames
+    return cols
 
-    # making test set half positive and half negative
-    # removes some of negative instances
-    # positive could mean that the instance has been nominated for OR has won best picture!
+feat_train = csvToArray('feat_train.csv')
+feat_test = csvToArray('feat_test.csv')
+label_train = csvToArray('label_train.csv')
+label_test = csvToArray('label_test.csv')
 
-    return trainRows, testRows, favoriteCols
+#
+# The first rows are names of columns
+feature_names = feat_train[0]
+label_names = label_train[0]
 
+#
+# These lines remove the column names and turn lists to numpy arrays
+# If you need lists, use for example data_train.tolist() to convert them back to lists
 
-features = csvToArray("features.csv")
-featNames = features[0]
-features = features[1:]
-print len(features), len(features[0])
+feat_train = np.array(feat_train)[1:, :].astype(float)
+feat_test = np.array(feat_test)[1:, :].astype(float)
+label_train = np.array(label_train)[1:, :].astype(int)
+label_test = np.array(label_test)[1:, :].astype(int)
 
-labels = csvToArray("labels.csv")
-labelNames = labels[0]
-labels = labels[1:]
-print len(labels), len(labels[0])
+#
+# scaling the feature columns
+# don't scale 'original row' feature
+for i in range(1, len(feat_train[0])):
+    feat_train[:, i] = preprocessing.scale(feat_train[:, i])
 
-labels = np.array(labels).astype(int)
-features = np.array(features).astype(float)
+for i in range(1, len(feat_test[0])):
+    feat_test[:, i] = preprocessing.scale(feat_test[:, i])
 
-featIdxMap = dict()
-for i in range(len(featNames)):
-    featIdxMap[featNames[i]] = i
+labelOfInterest = Label.Winner
 
-#getting title_year column number
-titleYearIdx = -1
-for i in range(len(featNames)):
-    if featNames[i] == 'title_year':
-        titleYearIdx = i
-print 'year index = ', titleYearIdx
-
-labelOfInterest = 1
-
-trainRowsReg, testRowsReg, favColsReg = getTrainTestRowsAndCols(2, titleYearIdx)
-trainRows, testRows, favCols = getTrainTestRowsAndCols(labelOfInterest, titleYearIdx)
-
-for i in range(len(features[0])):
-    if (i in favCols) or (i in favColsReg):
-        features[:, i] = preprocessing.scale(features[:, i])
+###=================== SVR =======================
+cols = getCols(Label.NumOfAwards)
 
 reg = svm.SVR(C=0.005, kernel='poly', degree=3, max_iter=1000000)
 
-predicted = cross_validation.cross_val_predict(reg, (features[trainRowsReg, :])[:, favColsReg], labels[trainRowsReg, 2], cv=10)
-print 'SVR cross_val_predict = ', r2_score(labels[trainRowsReg, 2], predicted)
+predicted = cross_validation.cross_val_predict(reg, feat_train[:, cols], label_train[:, Label.NumOfAwards.value], cv=10)
 
-# scores = cross_validation.cross_val_score(reg, (features[trainRowsReg, :])[:, favColsReg], labels[trainRowsReg, 2], cv=10)
-# print scores, 'avg = ', sum(scores)/10
+reg.fit(feat_train[:, cols], label_train[:, Label.NumOfAwards.value])
+
+predicted = reg.predict(feat_test[:, cols])
+
+print 'SVR cross_val_predict = ', r2_score(label_test[:, Label.NumOfAwards.value], predicted)
 
 ###=================== SVC =======================
+cols = getCols(labelOfInterest)
 
 clf = svm.SVC(C=1.5, kernel='poly', degree=3, max_iter=1000000)
 
-predicted = cross_validation.cross_val_predict(clf, (features[trainRows, :])[:, favCols],
-                                               labels[trainRows, labelOfInterest], cv=10)
+predicted = cross_validation.cross_val_predict(clf, feat_train[:, cols], label_train[:, labelOfInterest.value], cv=10)
 
-print 'SVC cross_val_predict = ', accuracy_score(labels[trainRows, labelOfInterest], predicted)
+clf.fit(feat_train[:, cols], label_train[:, labelOfInterest.value])
+
+predicted = clf.predict(feat_test[:, cols])
+
+print 'SVC cross_val_predict = ', accuracy_score(label_test[:, labelOfInterest.value], predicted)
+
+for i in range(len(feat_test)):
+    print feat_test[i][0]
 
 sum = 0
 sum_true = 0
-for h in range(len(trainRows)):
-    i = trainRows[h]
-    if labels[i][labelOfInterest] == 0:
+for i in range(len(label_test)):
+    if label_test[i][labelOfInterest.value] == 1:
         sum += 1
-        if predicted[h] == 0:
+        if predicted[i] == 1:
             sum_true += 1
-        print '%d: \t t=%d p=%d' % (i, labels[i][labelOfInterest], predicted[h])
+        print '%d: \t t=%d p=%d' % (feat_test[i][0], label_test[i][labelOfInterest.value], predicted[i])
 
 print 'total = %d, percent = %f' % (sum, sum_true/sum)
-
-# scores = cross_validation.cross_val_score(clf, (features[trainRows, :])[:, favCols], labels[trainRows, labelOfInterest], cv=10)
-# print scores, 'avg = ', sum(scores)/10
