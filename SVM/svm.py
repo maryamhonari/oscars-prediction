@@ -94,6 +94,11 @@ feat_test = np.array(feat_test)[1:, :].astype(float)
 label_train = np.array(label_train)[1:, :].astype(int)
 label_test = np.array(label_test)[1:, :].astype(int)
 
+train_years = np.copy(feat_train[:, feature_names.index('title_year')])
+test_years = np.copy(feat_test[:, feature_names.index('title_year')])
+
+print test_years
+
 #
 # scaling the feature columns
 # don't scale 'original row' feature
@@ -128,19 +133,67 @@ predicted = cross_validation.cross_val_predict(clf, feat_train[:, cols], label_t
 clf.fit(feat_train[:, cols], label_train[:, labelOfInterest.value])
 
 predicted = clf.predict(feat_test[:, cols])
+svm_distances = clf.decision_function(feat_test[:, cols])
+
+
+#select one from a bunch
+winners = [-1] * 2020
+distances = [-10000] * 2020
+reality = [-1] * 2020
+
+for i in range(len(predicted)):
+    year = int(test_years[i])
+    val = svm_distances[i]
+    if label_test[i][labelOfInterest.value] == 1: # this is the id of real winner
+        reality[year] = int(feat_test[i][0])
+    if val > distances[year]:
+        distances[year] = val
+        winners[year] = int(feat_test[i][0])
+
+
+total = 0
+correct = 0
+
+for i in range(1928, 2016):
+    if winners[i] != -1:
+        total += 1
+        if winners[i] == reality[i]:
+            correct += 1
+        print 'year %d winner guess is %d and reality is %d' % (i, winners[i], reality[i])
+
+
+print 'correct percent = ', correct/total
+
+has_year = [0] * 2020
+winners = [-1] * 2020
+nominees_count = [0] * 2020
+
+
+for i in range(len(feat_train)):
+    year = int(train_years[i])
+    has_year[year] = 1
+    if label_train[i][0] == 1:
+        nominees_count[year] += 1
+    if label_train[i][labelOfInterest.value] == 1:
+        winners[year] = int(feat_train[i][0])
+
+for i in range(2020):
+    if has_year[i] == 1:
+        print 'winner guess on year %d is %d and #nominees = %d' % (i, winners[i], nominees_count[i])
+
 
 print 'SVC cross_val_predict = ', accuracy_score(label_test[:, labelOfInterest.value], predicted)
 
-for i in range(len(feat_test)):
-    print feat_test[i][0]
+# for i in range(len(feat_test)):
+#     print feat_test[i][0]
 
-sum = 0
-sum_true = 0
-for i in range(len(label_test)):
-    if label_test[i][labelOfInterest.value] == 1:
-        sum += 1
-        if predicted[i] == 1:
-            sum_true += 1
-        print '%d: \t t=%d p=%d' % (feat_test[i][0], label_test[i][labelOfInterest.value], predicted[i])
-
-print 'total = %d, percent = %f' % (sum, sum_true/sum)
+# sum = 0
+# sum_true = 0
+# for i in range(len(label_test)):
+#     if label_test[i][labelOfInterest.value] == 1:
+#         sum += 1
+#         if predicted[i] == 1:
+#             sum_true += 1
+#         print '%d: \t t=%d p=%d' % (feat_test[i][0], label_test[i][labelOfInterest.value], predicted[i])
+#
+# print 'total = %d, percent = %f' % (sum, sum_true/sum)
