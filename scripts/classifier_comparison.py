@@ -32,7 +32,7 @@ feat_ignore = ['genres', 'plot_keywords',
                'budget',
                'actor_2_facebook_likes',
                'aspect_ratio']
-data_file = 'movies_original.csv'
+data_file = 'training_data.csv'
 
 prep_nom = DataPreprocessor(lbls, feat_ignore, data_file)
 prep_nom.preprocess()
