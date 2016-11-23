@@ -29,14 +29,10 @@ class DataPreprocessor:
         """
         self.features = []
         self.colmap = dict()
-        self.class_labels = [
-            'Nominated Best Picture',
-            'Won Best Picture',
-            'Num of Awards'
-        ]
+        self.class_labels = []
         self.labels = []
         self.class_label_index = []
-        self.ignore = ['genres', 'plot_keywords']
+        self.ignore = []
         self.csv_filename = ""
         self.column_headers = []
         self.features_numerical = []
@@ -163,6 +159,9 @@ class DataPreprocessor:
         janitor = preprocessing.Imputer(missing_values=np.NaN,
                                         strategy='most_frequent')
         self.features_numerical = janitor.fit_transform(
+                self.features_numerical).tolist()
+        scaler = preprocessing.StandardScaler()
+        self.features_numerical = scaler.fit_transform(
                 self.features_numerical).tolist()
 
     def add_feature(self, new_feat):
