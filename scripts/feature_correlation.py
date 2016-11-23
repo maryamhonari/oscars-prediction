@@ -1,12 +1,8 @@
 #!/usr/bin/python
 
-import numbers
-import decimal
-import random
 import scipy.stats
 import numpy as np
 from preprocessor import DataPreprocessor
-from sklearn import preprocessing
 
 """
 Calculates the correlation between each feature and the class labels, in order
@@ -21,7 +17,7 @@ to identify the most influential features.
 preprocessor = DataPreprocessor(['Nominated Best Picture',
                                 'Won Best Picture', 'Num of Awards'],
                                 ['genres', 'plot_keywords', 'movie_imdb_link'],
-                                'movies_original.csv')
+                                'training_data.csv')
 preprocessor.preprocess()
 
 preprocessor.numerify()
@@ -31,7 +27,7 @@ preprocessor.numerify()
 
 features = map(list, zip(*preprocessor.features_numerical))
 
-print "feature,nominated_best_picture,won_best_picture,num_of_awards"
+print("feature,nominated_best_picture,won_best_picture,num_of_awards")
 for index, feature_vector in enumerate(features):
     result = preprocessor.column_headers[index] + ","
     for label_vector in preprocessor.labels:
@@ -39,4 +35,4 @@ for index, feature_vector in enumerate(features):
         label_array = np.array(label_vector).astype(np.float)
         result += str(scipy.stats.pearsonr(feature_array, label_array)[0])
         result += ","
-    print result[:-1]
+    print(result[:-1])
