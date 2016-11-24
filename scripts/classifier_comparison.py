@@ -4,6 +4,7 @@ from preprocessor import DataPreprocessor
 from sklearn.linear_model import Perceptron
 from sklearn.linear_model import LinearRegression
 from sklearn import cross_validation
+from sklearn import metrics
 
 """
 Applies various algorithms on the same data with cross-validation (10-fold),
@@ -65,14 +66,14 @@ print("Training and cross validating...")
 for clf in classifiers_nomination:
     scores = cross_validation.cross_val_score(clf, prep_nom.features_numerical,
                                               prep_nom.labels_numerical[0],
-                                              cv=10)
+                                              cv=10, scoring="f1_macro")
     print("Nomination - %s Accuracy: %0.2f (+/- %0.2f)"
           % (type(clf).__name__, scores.mean(), scores.std() * 2))
 for clf in classifiers_win:
     scores = cross_validation.cross_val_score(clf,
                                               prep_win.features_numerical,
                                               prep_win.labels_numerical[1],
-                                              cv=10)
+                                              cv=10, scoring="f1_macro")
     print("Win - %s Accuracy: %0.2f (+/- %0.2f)"
           % (type(clf).__name__, scores.mean(), scores.std() * 2))
 for reg in regressors:
@@ -87,13 +88,16 @@ for reg in regressors:
 print("### Testing against random test set...")
 for clf in classifiers_nomination:
     clf = clf.fit(prep_nom.features_numerical, prep_nom.labels_numerical[0])
-    score = clf.score(prep_nom.test_features, prep_nom.test_labels)
-    print("Nomination - %s Accuracy: %0.2f" % (type(clf).__name__, score))
+    score = metrics.f1_score(prep_nom.test_labels,
+                             clf.predict(prep_nom.test_features))
+    print("Nomination - %s F-Score: %0.2f" % (type(clf).__name__, score))
 for clf in classifiers_win:
-    clf = clf.fit(prep_nom.features_numerical, prep_nom.labels_numerical[0])
-    score = clf.score(prep_nom.test_features, prep_nom.test_labels)
-    print("Win - %s Accuracy: %0.2f" % (type(clf).__name__, score))
+    clf = clf.fit(prep_win.features_numerical, prep_win.labels_numerical[1])
+    score = metrics.f1_score(prep_win.test_labels,
+                             clf.predict(prep_win.test_features))
+    print("Win - %s F-Score: %0.2f" % (type(clf).__name__, score))
 for reg in regressors:
-    reg = reg.fit(prep_nom.features_numerical, prep_nom.labels_numerical[0])
-    score = reg.score(prep_nom.test_features, prep_nom.test_labels)
-    print("Nomination - %s Accuracy: %0.2f" % (type(reg).__name__, score))
+    reg = reg.fit(prep_awards.features_numerical,
+                  prep_awards.labels_numerical[2])
+    score = reg.score(prep_awards.test_features, prep_awards.test_labels)
+    print("Awards - %s Accuracy: %0.2f" % (type(reg).__name__, score))
