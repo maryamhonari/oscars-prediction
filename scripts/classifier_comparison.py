@@ -117,12 +117,25 @@ for reg in regressors:
 if not args['no_test']:
     print("### Testing against test set...")
     for clf in classifiers_nomination:
-        score = metrics.f1_score(test_nom.labels_numerical[0],
-                                 clf.predict(test_nom.features_numerical))
+        predictions = clf.predict(test_nom.features_numerical)
+        score = metrics.f1_score(test_nom.labels_numerical[0], predictions)
+        prec = metrics.precision_score(test_nom.labels_numerical[0],
+                                            predictions)
+        recall = metrics.recall_score(test_nom.labels_numerical[0],
+                                      predictions)
+        print("Nomination - %s Precision: %0.2f" % (type(clf).__name__, prec))
+        print("Nomination - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Nomination - %s F-Score: %0.2f" % (type(clf).__name__, score))
     for clf in classifiers_win:
+        predictions = clf.predict(test_win.features_numerical)
         score = metrics.f1_score(test_win.labels_numerical[1],
                                  clf.predict(test_win.features_numerical))
+        prec = metrics.precision_score(test_win.labels_numerical[1],
+                                            predictions)
+        recall = metrics.recall_score(test_win.labels_numerical[1],
+                                      predictions)
+        print("Win - %s Precision: %0.2f" % (type(clf).__name__, prec))
+        print("Win - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Win - %s F-Score: %0.2f" % (type(clf).__name__, score))
     for reg in regressors:
         score = reg.score(test_awards.features_numerical,
