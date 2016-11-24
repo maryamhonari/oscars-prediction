@@ -25,14 +25,14 @@ with open('testing_indices.csv', 'rb') as testcsvfile:
     for row in entryreader:
         tsinds.append(int(row[0]))
 
-with open('movie_metadata.csv', 'rb') as datacsvfile:
+with open('movies_all_features.csv', 'rb') as datacsvfile:
     entryreader = csv.reader(datacsvfile, delimiter=',')
     for row in entryreader:
         if training_index in trinds or training_index == 1:
             training_data.append(row)
         training_index += 1
 
-with open('movie_metadata.csv', 'rb') as datacsvfile:
+with open('movies_all_features.csv', 'rb') as datacsvfile:
     entryreader = csv.reader(datacsvfile, delimiter=',')
     for row in entryreader:
         if testing_index in tsinds or testing_index == 1:
