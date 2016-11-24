@@ -136,9 +136,9 @@ cols = []
 cols.append(0)
 
 for i in range(0, len(feat_names) - 1):
-    if correlation_results[i, 0] > 0.1 \
-            or correlation_results[i, 1] > 0.1 \
-            or correlation_results[i, 2] > 0.1:
+    if math.fabs(correlation_results[i, 0]) > 0.1 \
+            or math.fabs(correlation_results[i, 1]) > 0.1 \
+            or math.fabs(correlation_results[i, 2]) > 0.1:
         cols.append(i + 1)
 
 print 'Feature names'
