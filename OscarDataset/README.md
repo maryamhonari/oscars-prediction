@@ -14,3 +14,5 @@ Some important points about the new datasets:
 6) feat_train, feat_test contain only features that have correlation above 0.1 for at least one of the class labels
 
 7) feat_train, feat_test, label_train, label_test were obtained by running test_train_gen.py (in OscarDataset on github) on movies_all_features.csv
+
+8) feat_train, feat_test have a new feature/column called 'original_row' that you should ignore; it contains the original row number of that instance in movie_metadata.csv or similarly movies_all_features.csv
