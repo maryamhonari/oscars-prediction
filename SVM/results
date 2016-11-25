@@ -6,6 +6,7 @@ Win - SVM Precision: 0.29
 Win - SVM Recall: 0.09
 Win - SVM F-Score: 0.14
 
+top-1: correct percent = 0.454545454545
 top-2: correct percent = 0.681818181818
 top-3: correct percent = 0.727272727273
 top-4: correct percent = 0.818181818182
