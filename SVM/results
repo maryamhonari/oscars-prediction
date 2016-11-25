@@ -1,0 +1,13 @@
+Awards - SVM regressor Score: 0.47
+Nomination - SVM Precision: 0.91
+Nomination - SVM Recall: 0.85
+Nomination - SVM F-Score: 0.88
+Win - SVM Precision: 0.29
+Win - SVM Recall: 0.09
+Win - SVM F-Score: 0.14
+
+top-2: correct percent = 0.681818181818
+top-3: correct percent = 0.727272727273
+top-4: correct percent = 0.818181818182
+top-5: correct percent = 0.954545454545
+
