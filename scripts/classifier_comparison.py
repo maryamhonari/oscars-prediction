@@ -57,24 +57,24 @@ test_file = 'testing_data.csv'
 
 prep_nom = DataPreprocessor(lbls, nom_ignore, data_file)
 prep_nom.preprocess()
-prep_nom.numerify()
+prep_nom.numerify([8])
 prep_win = DataPreprocessor(lbls, win_ignore, data_file)
 prep_win.preprocess()
-prep_win.numerify()
+prep_win.numerify([8])
 prep_awd = DataPreprocessor(lbls, awd_ignore, data_file)
 prep_awd.preprocess()
-prep_awd.numerify()
+prep_awd.numerify([8])
 
 # Create test set:
 test_nom = DataPreprocessor(lbls, nom_ignore, test_file)
 test_nom.preprocess()
-test_nom.numerify()
+test_nom.numerify([8])
 test_win = DataPreprocessor(lbls, win_ignore, test_file)
 test_win.preprocess()
-test_win.numerify()
+test_win.numerify([8])
 test_awards = DataPreprocessor(lbls, awd_ignore, test_file)
 test_awards.preprocess()
-test_awards.numerify()
+test_awards.numerify([8])
 
 # Prepare Classifiers:
 classifiers_nomination = [

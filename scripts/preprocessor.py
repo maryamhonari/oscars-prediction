@@ -6,7 +6,6 @@ import numbers
 import decimal
 import math
 import numpy as np
-import gc
 from sklearn import preprocessing
 
 # Author: Omar Elazhary <omazhary@gmail.com>
@@ -68,6 +67,9 @@ class DataPreprocessor:
                         self.colmap[column] = row.index(column)
 
                     skippable_attributes = list(self.ignore)
+                    skippable_attributes = [
+                            val for val in temp_headers
+                            if val in skippable_attributes]
                     skippable_attributes.extend(self.class_labels)
                     skippable_attributes = [self.colmap[x] for x in
                                             skippable_attributes]
@@ -118,13 +120,18 @@ class DataPreprocessor:
 
         return result
 
-    def numerify(self):
+    def numerify(self, skip_scaling=[]):
         """
         Converts all non-numerical attributes (features and labels) into
         numerical attributes.
+        Parameters:
+            skip_scaling - List of feature indices for whom no scaling should
+            occur.
         """
         # For features:
         temp = self.split_features()
+        skipped = []
+        skipped_indexes = []
         for i in range(len(temp)):
             self.features_numerical.append([])
         for index, feature_vector in enumerate(temp):
@@ -140,6 +147,11 @@ class DataPreprocessor:
                         feature_vector)
             else:
                 self.features_numerical[index] = list(feature_vector)
+            if index in skip_scaling:
+                skipped.append(self.features_numerical[index])
+                skipped_indexes.append(index)
+        for index in skipped_indexes:
+            del self.features_numerical[index]
         # Rearrange features into rows:
         self.features_numerical = map(list, zip(*self.features_numerical))
         # For labels:
@@ -163,6 +175,12 @@ class DataPreprocessor:
         scaler = preprocessing.StandardScaler()
         self.features_numerical = scaler.fit_transform(
                 self.features_numerical).tolist()
+        for skip in skipped:
+            for index, feature in enumerate(skip):
+                self.features_numerical[index].append(feature)
+                print feature
+                print self.features_numerical[index]
+                break
 
     def add_feature(self, new_feat):
         """
