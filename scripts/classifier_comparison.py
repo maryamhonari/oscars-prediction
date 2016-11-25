@@ -40,13 +40,7 @@ def precision_at_k(y_true, y_predicted, confidence, k):
             k_max_predicted.append(y_predicted[index])
         if len(k_max_true) == k:
             break
-    result = 0.0
-    for index, prediction in enumerate(k_max_predicted):
-        if prediction == k_max_true[index]:
-            result += 1
-    print k_max_true
-    print k_max_predicted
-    return result / k
+    return metrics.recall_score(k_max_true, k_max_predicted)
 
 parser = argparse.ArgumentParser(
         description='Run CV and/or Testing on implemented algorithms.')
