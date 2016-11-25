@@ -52,29 +52,30 @@ with open('feature_correlation_scaled.csv', 'rb') as corr_file:
 # Preprocess data:
 print("Preprocessing the data...")
 lbls = ['Nominated Best Picture', 'Won Best Picture', 'Num of Awards']
-data_file = 'training_data.csv'
-test_file = 'testing_data.csv'
 
-prep_nom = DataPreprocessor(lbls, nom_ignore, data_file)
+prep_nom = DataPreprocessor(lbls, nom_ignore, 'movies_all_features_nom.csv')
 prep_nom.preprocess()
-prep_nom.numerify([8])
-prep_win = DataPreprocessor(lbls, win_ignore, data_file)
+#prep_nom.numerify([9])
+prep_nom.numerify()
+prep_win = DataPreprocessor(lbls, win_ignore, 'movies_all_features_won.csv')
 prep_win.preprocess()
-prep_win.numerify([8])
-prep_awd = DataPreprocessor(lbls, awd_ignore, data_file)
+#prep_win.numerify([7])
+prep_win.numerify()
+prep_awd = DataPreprocessor(lbls, awd_ignore, 'movies_all_features_nom.csv')
 prep_awd.preprocess()
-prep_awd.numerify([8])
+#prep_awd.numerify([8])
+prep_awd.numerify()
 
 # Create test set:
-test_nom = DataPreprocessor(lbls, nom_ignore, test_file)
-test_nom.preprocess()
-test_nom.numerify([8])
-test_win = DataPreprocessor(lbls, win_ignore, test_file)
-test_win.preprocess()
-test_win.numerify([8])
-test_awards = DataPreprocessor(lbls, awd_ignore, test_file)
-test_awards.preprocess()
-test_awards.numerify([8])
+print("Extracting test set...")
+test_instances = []
+with open('testing_indices.csv', 'rb') as test_inst_file:
+    entryreader = csv.reader(test_inst_file, delimiter=',')
+    for row in entryreader:
+        test_instances.append(int(row[0]))
+prep_nom.create_test_set(test_instances)
+prep_win.create_test_set(test_instances)
+prep_awd.create_test_set(test_instances)
 
 # Prepare Classifiers:
 classifiers_nomination = [
@@ -124,27 +125,27 @@ for reg in regressors:
 if not args['no_test']:
     print("### Testing against test set...")
     for clf in classifiers_nomination:
-        predictions = clf.predict(test_nom.features_numerical)
-        score = metrics.f1_score(test_nom.labels_numerical[0], predictions)
-        prec = metrics.precision_score(test_nom.labels_numerical[0],
-                                            predictions)
-        recall = metrics.recall_score(test_nom.labels_numerical[0],
+        predictions = clf.predict(prep_nom.test_features)
+        score = metrics.f1_score(prep_nom.test_labels[0], predictions)
+        prec = metrics.precision_score(prep_nom.test_labels[0],
+                                       predictions)
+        recall = metrics.recall_score(prep_nom.test_labels[0],
                                       predictions)
         print("Nomination - %s Precision: %0.2f" % (type(clf).__name__, prec))
         print("Nomination - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Nomination - %s F-Score: %0.2f" % (type(clf).__name__, score))
     for clf in classifiers_win:
-        predictions = clf.predict(test_win.features_numerical)
-        score = metrics.f1_score(test_win.labels_numerical[1],
-                                 clf.predict(test_win.features_numerical))
-        prec = metrics.precision_score(test_win.labels_numerical[1],
-                                            predictions)
-        recall = metrics.recall_score(test_win.labels_numerical[1],
+        predictions = clf.predict(prep_win.test_features)
+        score = metrics.f1_score(prep_win.test_labels[1],
+                                 clf.predict(prep_win.test_features))
+        prec = metrics.precision_score(prep_win.test_labels[1],
+                                       predictions)
+        recall = metrics.recall_score(prep_win.test_labels[1],
                                       predictions)
         print("Win - %s Precision: %0.2f" % (type(clf).__name__, prec))
         print("Win - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Win - %s F-Score: %0.2f" % (type(clf).__name__, score))
     for reg in regressors:
-        score = reg.score(test_awards.features_numerical,
-                          test_awards.labels_numerical[2])
+        score = reg.score(prep_awd.test_features,
+                          prep_awd.test_labels[2])
         print("Awards - %s Score: %0.2f" % (type(reg).__name__, score))

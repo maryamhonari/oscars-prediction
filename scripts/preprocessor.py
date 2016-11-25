@@ -128,6 +128,7 @@ class DataPreprocessor:
             skip_scaling - List of feature indices for whom no scaling should
             occur.
         """
+        skip_scaling.sort(reverse=True)
         # For features:
         temp = self.split_features()
         skipped = []
@@ -148,7 +149,7 @@ class DataPreprocessor:
             else:
                 self.features_numerical[index] = list(feature_vector)
             if index in skip_scaling:
-                skipped.append(self.features_numerical[index])
+                skipped.append(feature_vector)
                 skipped_indexes.append(index)
         for index in skipped_indexes:
             del self.features_numerical[index]
@@ -178,9 +179,6 @@ class DataPreprocessor:
         for skip in skipped:
             for index, feature in enumerate(skip):
                 self.features_numerical[index].append(feature)
-                print feature
-                print self.features_numerical[index]
-                break
 
     def add_feature(self, new_feat):
         """
@@ -198,7 +196,27 @@ class DataPreprocessor:
         for index1, vector1 in enumerate(self.features):
             self.features[index1].append(new_feat[index1])
 
-    def create_test_set(self, test_data_percent, label_index, balanced=False):
+    def create_test_set(self, test_indices):
+        """
+        Pulls out specific rows from the feature set to create a test set. The
+        test vectors are then stored in test_features and test_labels. It makes
+        sense to call this after the "numerify" function.
+        Parameters:
+            test_indices - A list of indices that should be used as a test set.
+        """
+        test_indices = sorted(test_indices, reverse=True)
+        for index in test_indices:
+            self.test_features.append(self.features_numerical[index])
+            del self.features_numerical[index]
+        for label_index, label in enumerate(self.labels_numerical):
+            self.test_labels.append([])
+            for index in test_indices:
+                self.test_labels[label_index].append(
+                                self.labels_numerical[label_index][index])
+                del self.labels_numerical[label_index][index]
+
+    def randomize_test_set(self, test_data_percent, label_index,
+                           balanced=False):
         """
         Samples a test set out of the existing feature and label sets without
         replacement. The size of the testset is the percentage given of the
@@ -235,14 +253,14 @@ class DataPreprocessor:
                                              dist_values[key]
                                              )
                                )
-            # Sort the indexes so that removing the items is painless:
-            indexes.sort(reverse=True)
-            for index in indexes:
-                self.test_features.append(self.features_numerical[index])
-                self.test_labels.append(
-                                self.labels_numerical[label_index][index])
-                del self.features_numerical[index]
-                del self.labels_numerical[label_index][index]
+        # Sort the indexes so that removing the items is painless:
+        indexes.sort(reverse=True)
+        for index in indexes:
+            self.test_features.append(self.features_numerical[index])
+            self.test_labels.append(
+                            self.labels_numerical[label_index][index])
+            del self.features_numerical[index]
+            del self.labels_numerical[label_index][index]
 
     # Helper Functions:
     def is_float(self, value):
