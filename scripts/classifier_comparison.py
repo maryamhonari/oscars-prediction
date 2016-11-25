@@ -5,6 +5,7 @@ from sklearn.linear_model import Perceptron
 from sklearn.linear_model import LinearRegression
 from sklearn import cross_validation
 from sklearn import metrics
+import numpy as np
 import argparse
 import csv
 
@@ -15,6 +16,31 @@ and reports on the output.
 
 # Author: Omar Elazhary <omazhary@gmail.com>
 # License: MIT
+
+def precision_at_k(y_true, y_predicted, confidence, k):
+    """
+    Calculates the precision at k results as a scoring metric.
+    Parameters:
+        y_true - A list of true/correct labels to be used as a reference.
+        y_predicted - A list of predicted labels aligned with y_true.
+        confidence - A list of confidence scores aligned with y_true.
+    Returns:
+        The precision at k score.
+    """
+    # Reorder based on confidence (max to min). The further the point is from
+    # the hyperplane, the more certain we are it's classified correctly.
+    confidence = np.asarray(confidence)
+    np.absolute(confidence)
+    indices = confidence.argsort()[::-1]
+    k_max_true = []
+    k_max_predicted = []
+    for index in indices:
+        if y_predicted[index] == 1:
+            k_max_true.append(y_true[index])
+            k_max_predicted.append(y_predicted[index])
+        if len(k_max_true) == k:
+            break
+    return metrics.precision_score(k_max_true, k_max_predicted)
 
 parser = argparse.ArgumentParser(
         description='Run CV and/or Testing on implemented algorithms.')
@@ -124,27 +150,38 @@ for reg in regressors:
 # Run testing:
 if not args['no_test']:
     print("### Testing against test set...")
+    k = 400
     for clf in classifiers_nomination:
         predictions = clf.predict(prep_nom.test_features)
+        confidence = clf.decision_function(prep_nom.test_features)
         score = metrics.f1_score(prep_nom.test_labels[0], predictions)
         prec = metrics.precision_score(prep_nom.test_labels[0],
                                        predictions)
         recall = metrics.recall_score(prep_nom.test_labels[0],
                                       predictions)
+        patk = precision_at_k(prep_nom.test_labels[0], predictions,
+                              confidence, k)
         print("Nomination - %s Precision: %0.2f" % (type(clf).__name__, prec))
         print("Nomination - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Nomination - %s F-Score: %0.2f" % (type(clf).__name__, score))
+        print("Nomination - %s Precision at %d: %0.2f" % (type(clf).__name__,
+              k, score))
     for clf in classifiers_win:
         predictions = clf.predict(prep_win.test_features)
+        confidence = clf.decision_function(prep_win.test_features)
         score = metrics.f1_score(prep_win.test_labels[1],
                                  clf.predict(prep_win.test_features))
         prec = metrics.precision_score(prep_win.test_labels[1],
                                        predictions)
         recall = metrics.recall_score(prep_win.test_labels[1],
                                       predictions)
+        patk = precision_at_k(prep_win.test_labels[1], predictions,
+                              confidence, k)
         print("Win - %s Precision: %0.2f" % (type(clf).__name__, prec))
         print("Win - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Win - %s F-Score: %0.2f" % (type(clf).__name__, score))
+        print("Win - %s Precision at %d: %0.2f" % (type(clf).__name__,
+              k, score))
     for reg in regressors:
         score = reg.score(prep_awd.test_features,
                           prep_awd.test_labels[2])
