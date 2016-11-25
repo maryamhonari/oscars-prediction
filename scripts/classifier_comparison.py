@@ -35,12 +35,18 @@ def precision_at_k(y_true, y_predicted, confidence, k):
     k_max_true = []
     k_max_predicted = []
     for index in indices:
-        if y_predicted[index] == 1:
+        if y_true[index] == 1:
             k_max_true.append(y_true[index])
             k_max_predicted.append(y_predicted[index])
         if len(k_max_true) == k:
             break
-    return metrics.precision_score(k_max_true, k_max_predicted)
+    result = 0.0
+    for index, prediction in enumerate(k_max_predicted):
+        if prediction == k_max_true[index]:
+            result += 1
+    print k_max_true
+    print k_max_predicted
+    return result / k
 
 parser = argparse.ArgumentParser(
         description='Run CV and/or Testing on implemented algorithms.')
@@ -81,15 +87,12 @@ lbls = ['Nominated Best Picture', 'Won Best Picture', 'Num of Awards']
 
 prep_nom = DataPreprocessor(lbls, nom_ignore, 'movies_all_features_nom.csv')
 prep_nom.preprocess()
-#prep_nom.numerify([9])
 prep_nom.numerify()
 prep_win = DataPreprocessor(lbls, win_ignore, 'movies_all_features_won.csv')
 prep_win.preprocess()
-#prep_win.numerify([7])
 prep_win.numerify()
 prep_awd = DataPreprocessor(lbls, awd_ignore, 'movies_all_features_nom.csv')
 prep_awd.preprocess()
-#prep_awd.numerify([8])
 prep_awd.numerify()
 
 # Create test set:
@@ -150,7 +153,7 @@ for reg in regressors:
 # Run testing:
 if not args['no_test']:
     print("### Testing against test set...")
-    k = 400
+    k = 10
     for clf in classifiers_nomination:
         predictions = clf.predict(prep_nom.test_features)
         confidence = clf.decision_function(prep_nom.test_features)
@@ -165,7 +168,7 @@ if not args['no_test']:
         print("Nomination - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Nomination - %s F-Score: %0.2f" % (type(clf).__name__, score))
         print("Nomination - %s Precision at %d: %0.2f" % (type(clf).__name__,
-              k, score))
+              k, patk))
     for clf in classifiers_win:
         predictions = clf.predict(prep_win.test_features)
         confidence = clf.decision_function(prep_win.test_features)
@@ -181,7 +184,7 @@ if not args['no_test']:
         print("Win - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Win - %s F-Score: %0.2f" % (type(clf).__name__, score))
         print("Win - %s Precision at %d: %0.2f" % (type(clf).__name__,
-              k, score))
+              k, patk))
     for reg in regressors:
         score = reg.score(prep_awd.test_features,
                           prep_awd.test_labels[2])
