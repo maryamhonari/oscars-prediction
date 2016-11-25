@@ -125,6 +125,7 @@ class DataPreprocessor:
         """
         # For features:
         temp = self.split_features()
+        cat_feat = []
         for i in range(len(temp)):
             self.features_numerical.append([])
         for index, feature_vector in enumerate(temp):
@@ -138,6 +139,7 @@ class DataPreprocessor:
                 encoder.fit(feature_vector)
                 self.features_numerical[index] = encoder.transform(
                         feature_vector)
+                cat_feat.append(index)
             else:
                 self.features_numerical[index] = list(feature_vector)
         # Rearrange features into rows:
@@ -160,9 +162,10 @@ class DataPreprocessor:
                                         strategy='most_frequent')
         self.features_numerical = janitor.fit_transform(
                 self.features_numerical).tolist()
-        scaler = preprocessing.StandardScaler()
-        self.features_numerical = scaler.fit_transform(
-                self.features_numerical).tolist()
+        hot_enc = preprocessing.OneHotEncoder(categorical_features=cat_feat,
+                                              sparse=False)
+        self.features_numerical = hot_enc.fit_transform(
+                self.features_numerical)
 
     def add_feature(self, new_feat):
         """
