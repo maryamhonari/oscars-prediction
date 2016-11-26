@@ -17,16 +17,28 @@ and reports on the output.
 # Author: Omar Elazhary <omazhary@gmail.com>
 # License: MIT
 
-def precision_at_k(y_true, y_predicted, confidence, k):
+def precision_at_k(y_true, y_predicted, confidence, k, group_by=[]):
     """
     Calculates the precision at k results as a scoring metric.
     Parameters:
         y_true - A list of true/correct labels to be used as a reference.
         y_predicted - A list of predicted labels aligned with y_true.
         confidence - A list of confidence scores aligned with y_true.
+        k - The interval to be considered for precision calculation.
+        group_by - The feature by which the score should be grouped by, and the
+        average score is returned.
     Returns:
         The precision at k score.
     """
+    # Figure out the groups within the data (if any):
+    groups = dict()
+    if not len(group_by) == 0:
+        for index, item in enumerate(group_by):
+            if item not in groups.keys():
+                groups[item] = []
+            groups[item].append(index)
+    # Create list subsets based on group indices:
+    # Do the calculation per group
     # Reorder based on confidence (max to min). The further the point is from
     # the hyperplane, the more certain we are it's classified correctly.
     confidence = np.asarray(confidence)
@@ -40,6 +52,7 @@ def precision_at_k(y_true, y_predicted, confidence, k):
             k_max_predicted.append(y_predicted[index])
         if len(k_max_true) == k:
             break
+    # return the average result:
     return metrics.recall_score(k_max_true, k_max_predicted)
 
 parser = argparse.ArgumentParser(
@@ -50,6 +63,12 @@ parser.add_argument(
 parser.add_argument(
         '--no-test', default=False, action='store_true',
         help='Whether or not to output test results')
+parser.add_argument(
+        '--predict', default=False, action='store_true',
+        help='Whether or not to perform a prediction')
+parser.add_argument(
+        '--pred-feat', metavar='f', type=str,
+        help='The input file for predictions (prediction features)')
 
 args = vars(parser.parse_args())
 
@@ -90,15 +109,16 @@ prep_awd.preprocess()
 prep_awd.numerify()
 
 # Create test set:
-print("Extracting test set...")
-test_instances = []
-with open('testing_indices.csv', 'rb') as test_inst_file:
-    entryreader = csv.reader(test_inst_file, delimiter=',')
-    for row in entryreader:
-        test_instances.append(int(row[0]))
-prep_nom.create_test_set(test_instances)
-prep_win.create_test_set(test_instances)
-prep_awd.create_test_set(test_instances)
+if not args['no_test']:
+    print("Extracting test set...")
+    test_instances = []
+    with open('testing_indices.csv', 'rb') as test_inst_file:
+        entryreader = csv.reader(test_inst_file, delimiter=',')
+        for row in entryreader:
+            test_instances.append(int(row[0]))
+    prep_nom.create_test_set(test_instances)
+    prep_win.create_test_set(test_instances)
+    prep_awd.create_test_set(test_instances)
 
 # Prepare Classifiers:
 classifiers_nomination = [
@@ -183,3 +203,14 @@ if not args['no_test']:
         score = reg.score(prep_awd.test_features,
                           prep_awd.test_labels[2])
         print("Awards - %s Score: %0.2f" % (type(reg).__name__, score))
+
+# Run prediction:
+if args['predict']:
+    if args['pred_feat'] == None:
+        raise Exception("No file provided for prediction features!!")
+    pred_nom = DataPreprocessor(lbls, nom_ignore, args['pred_feat'])
+    pred_nom.preprocess()
+    pred_nom.numerify()
+    pred_win = DataPreprocessor(lbls, win_ignore, args['pred_feat'])
+    pred_win.preprocess()
+    pred_win.numerify()
