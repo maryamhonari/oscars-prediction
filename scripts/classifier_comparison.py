@@ -31,29 +31,36 @@ def precision_at_k(y_true, y_predicted, confidence, k, group_by=[]):
         The precision at k score.
     """
     # Figure out the groups within the data (if any):
-    groups = dict()
+    group_indices = dict()
     if not len(group_by) == 0:
         for index, item in enumerate(group_by):
-            if item not in groups.keys():
-                groups[item] = []
-            groups[item].append(index)
+            if item not in group_indices.keys():
+                group_indices[item] = []
+            group_indices[item].append(index)
+    else:
+        group_indices['all'] = range(0, len(confidence))
     # Create list subsets based on group indices:
-    # Do the calculation per group
-    # Reorder based on confidence (max to min). The further the point is from
-    # the hyperplane, the more certain we are it's classified correctly.
-    confidence = np.asarray(confidence)
-    np.absolute(confidence)
-    indices = confidence.argsort()[::-1]
-    k_max_true = []
-    k_max_predicted = []
-    for index in indices:
-        if y_true[index] == 1:
-            k_max_true.append(y_true[index])
-            k_max_predicted.append(y_predicted[index])
-        if len(k_max_true) == k:
-            break
+    results = []
+    for key, group_index in group_indices.items():
+        # Do the calculation per group
+        # Reorder based on confidence (max to min). The further the point is
+        # from the hyperplane, the more certain we are it's classified
+        # correctly.
+        sub_confidence = [confidence[i] for i in group_index]
+        sub_confidence = np.asarray(sub_confidence)
+        np.absolute(sub_confidence)
+        indices = sub_confidence.argsort()[::-1]
+        k_max_true = []
+        k_max_predicted = []
+        for index in indices:
+            if y_true[index] == 1:
+                k_max_true.append(y_true[index])
+                k_max_predicted.append(y_predicted[index])
+            if len(k_max_true) == k:
+                break
+        results.append(metrics.recall_score(k_max_true, k_max_predicted))
     # return the average result:
-    return metrics.recall_score(k_max_true, k_max_predicted)
+    return np.mean(results)
 
 parser = argparse.ArgumentParser(
         description='Run CV and/or Testing on implemented algorithms.')
@@ -166,6 +173,8 @@ for reg in regressors:
 
 # Run testing:
 if not args['no_test']:
+    # Extract the year feature for grouping purposes:
+    years = prep_nom.split_features(test=True)[9]
     print("### Testing against test set...")
     k = 10
     for clf in classifiers_nomination:
@@ -177,7 +186,7 @@ if not args['no_test']:
         recall = metrics.recall_score(prep_nom.test_labels[0],
                                       predictions)
         patk = precision_at_k(prep_nom.test_labels[0], predictions,
-                              confidence, k)
+                              confidence, k, years)
         print("Nomination - %s Precision: %0.2f" % (type(clf).__name__, prec))
         print("Nomination - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Nomination - %s F-Score: %0.2f" % (type(clf).__name__, score))
@@ -193,7 +202,7 @@ if not args['no_test']:
         recall = metrics.recall_score(prep_win.test_labels[1],
                                       predictions)
         patk = precision_at_k(prep_win.test_labels[1], predictions,
-                              confidence, k)
+                              confidence, k, years)
         print("Win - %s Precision: %0.2f" % (type(clf).__name__, prec))
         print("Win - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Win - %s F-Score: %0.2f" % (type(clf).__name__, score))

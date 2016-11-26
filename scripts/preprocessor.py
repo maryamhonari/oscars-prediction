@@ -102,7 +102,7 @@ class DataPreprocessor:
                     self.features.append(data_row)
                 counter += 1
 
-    def split_features(self):
+    def split_features(self, test=False):
         """
         Splits the already preprocessed feature matrix vertically instead of
         horizontally, so that you get a single list per feature, perfectly
@@ -110,12 +110,17 @@ class DataPreprocessor:
         preprocessed.
         """
         # Initialize the result arrays:
+        feat_in = []
         result = []
-        for feature in self.features[0]:
+        if test:
+            feat_in = self.test_features
+        else:
+            feat_in = self.features
+        for feature in feat_in[0]:
             result.append([])
 
-        for index1, value1 in enumerate(self.features):
-            for index2, value2 in enumerate(self.features[index1]):
+        for index1, value1 in enumerate(feat_in):
+            for index2, value2 in enumerate(feat_in[index1]):
                 result[index2].append(value2)
 
         return result
