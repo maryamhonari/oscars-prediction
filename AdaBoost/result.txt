@@ -1,0 +1,47 @@
+Awards - AdaBoost regressor Score: 0.60
+Nomination - AdaBoost Precision: 0.81
+Nomination - AdaBoost Recall: 0.69
+Nomination - AdaBoost F-Score: 0.74
+
+#### Predicted values ####
+Win - AdaBoost Precision: 0.43
+Win - AdaBoost Recall: 0.27
+Win - AdaBoost F-Score: 0.33
+
+
+top-1: correct percent =  0.454545454545
+top-2: correct percent =  0.727272727273
+top-3: correct percent =  0.863636363636
+top-4: correct percent =  0.909090909091
+top-5: correct percent =  0.954545454545
+
+
+
+
+
+
+
+
+
+
+Possible nominees:
+Zootopia��
+Hell or High Water��
+The Jungle Book��
+Moonlight��
+Love & Friendship��
+Finding Dory��
+Hunt for the Wilderpeople��
+Kubo and the Two Strings��
+Captain America: Civil War��
+Sing Street��
+Arrival��
+Don't Think Twice��
+Moana��
+El abrazo de la serpiente��
+The Nice Guys��
+Hoover Dam��
+Little Men��
+The Witch��
+Only Yesterday��
+Tower��
