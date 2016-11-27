@@ -65,10 +65,10 @@ def precision_at_k(y_true, y_predicted, confidence, k, group_by=[]):
 parser = argparse.ArgumentParser(
         description='Run CV and/or Testing on implemented algorithms.')
 parser.add_argument(
-        '--no-cv', default=False, action='store_true',
+        '--cv', default=False, action='store_true',
         help='Whether or not to output cv results')
 parser.add_argument(
-        '--no-test', default=False, action='store_true',
+        '--test', default=False, action='store_true',
         help='Whether or not to output test results')
 parser.add_argument(
         '--predict', default=False, action='store_true',
@@ -76,6 +76,12 @@ parser.add_argument(
 parser.add_argument(
         '--pred-feat', metavar='f', type=str,
         help='The input file for predictions (prediction features)')
+parser.add_argument(
+        '--predictor', metavar='p', type=str,
+        help='The scikit-learn class name for the required classifier')
+parser.add_argument(
+        '--prec-at-k', metavar='k', type=int,
+        help='The size of the interval for precision at k calculations')
 
 args = vars(parser.parse_args())
 
@@ -116,7 +122,7 @@ prep_awd.preprocess()
 prep_awd.numerify()
 
 # Create test set:
-if not args['no_test']:
+if args['test']:
     print("Extracting test set...")
     test_instances = []
     with open('testing_indices.csv', 'rb') as test_inst_file:
@@ -140,11 +146,11 @@ regressors = [
 
 # Run training and cross-validation:
 print("Training...")
-if not args['no_cv']:
+if args['cv']:
     print("### Cross validation enabled.")
 for clf in classifiers_nomination:
     clf = clf.fit(prep_nom.features_numerical, prep_nom.labels_numerical[0])
-    if not args['no_cv']:
+    if args['cv']:
         scores = cross_validation.cross_val_score(clf,
                                                   prep_nom.features_numerical,
                                                   prep_nom.labels_numerical[0],
@@ -153,7 +159,7 @@ for clf in classifiers_nomination:
               % (type(clf).__name__, scores.mean(), scores.std() * 2))
 for clf in classifiers_win:
     clf = clf.fit(prep_win.features_numerical, prep_win.labels_numerical[1])
-    if not args['no_cv']:
+    if args['cv']:
         scores = cross_validation.cross_val_score(clf,
                                                   prep_win.features_numerical,
                                                   prep_win.labels_numerical[1],
@@ -163,7 +169,7 @@ for clf in classifiers_win:
 for reg in regressors:
     reg = reg.fit(prep_awd.features_numerical,
                   prep_awd.labels_numerical[2])
-    if not args['no_cv']:
+    if args['cv']:
         scores = cross_validation.cross_val_score(reg,
                                                   prep_awd.features_numerical,
                                                   prep_awd.labels_numerical[2],
@@ -172,11 +178,11 @@ for reg in regressors:
               % (type(reg).__name__, scores.mean(), scores.std() * 2))
 
 # Run testing:
-if not args['no_test']:
+if args['test']:
     # Extract the year feature for grouping purposes:
     years = prep_nom.split_features(test=True)[9]
     print("### Testing against test set...")
-    k = 10
+    k = args['prec_at_k']
     for clf in classifiers_nomination:
         predictions = clf.predict(prep_nom.test_features)
         confidence = clf.decision_function(prep_nom.test_features)
@@ -217,9 +223,12 @@ if not args['no_test']:
 if args['predict']:
     if args['pred_feat'] == None:
         raise Exception("No file provided for prediction features!!")
-    pred_nom = DataPreprocessor(lbls, nom_ignore, args['pred_feat'])
+    pred_nom = DataPreprocessor([], nom_ignore, args['pred_feat'])
     pred_nom.preprocess()
     pred_nom.numerify()
-    pred_win = DataPreprocessor(lbls, win_ignore, args['pred_feat'])
-    pred_win.preprocess()
-    pred_win.numerify()
+    for clf in classifiers_nomination:
+        if type(clf).__name__ == args['predictor']:
+            output = clf.predict(pred_nom.features_numerical)
+            for element in output:
+                print(element)
+            break
