@@ -1,4 +1,5 @@
 *.csv
 *.ods
 *.pyc
+*.png
 .Rhistory
