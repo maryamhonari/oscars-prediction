@@ -138,11 +138,11 @@ if args['test']:
 # Prepare Classifiers:
 classifiers_nomination = [
                 Perceptron(penalty='l2'),
-                MLPClassifier(),
+                MLPClassifier(hidden_layer_sizes=(200,)),
         ]
 classifiers_win = [
                 Perceptron(penalty='l1'),
-                MLPClassifier(),
+                MLPClassifier(hidden_layer_sizes=(200, 250, )),
         ]
 regressors = [
                 LinearRegression(),
@@ -189,7 +189,6 @@ if args['test']:
     k = args['prec_at_k']
     for clf in classifiers_nomination:
         predictions = clf.predict(prep_nom.test_features)
-        confidence = clf.decision_function(prep_nom.test_features)
         score = metrics.f1_score(prep_nom.test_labels[0], predictions)
         prec = metrics.precision_score(prep_nom.test_labels[0],
                                        predictions)
@@ -199,13 +198,13 @@ if args['test']:
         print("Nomination - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Nomination - %s F-Score: %0.2f" % (type(clf).__name__, score))
         if not type(clf).__name__ == "MLPClassifier":
+            confidence = clf.decision_function(prep_nom.test_features)
             patk = precision_at_k(prep_nom.test_labels[0], predictions,
                                   confidence, k, years)
             print("Nomination - %s Precision at %d: %0.2f" % (
                 type(clf).__name__, k, patk))
     for clf in classifiers_win:
         predictions = clf.predict(prep_win.test_features)
-        confidence = clf.decision_function(prep_win.test_features)
         score = metrics.f1_score(prep_win.test_labels[1],
                                  clf.predict(prep_win.test_features))
         prec = metrics.precision_score(prep_win.test_labels[1],
@@ -216,6 +215,7 @@ if args['test']:
         print("Win - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Win - %s F-Score: %0.2f" % (type(clf).__name__, score))
         if not type(clf).__name__ == "MLPClassifier":
+            confidence = clf.decision_function(prep_win.test_features)
             patk = precision_at_k(prep_win.test_labels[1], predictions,
                                   confidence, k, years)
             print("Win - %s Precision at %d: %0.2f" % (type(clf).__name__,
