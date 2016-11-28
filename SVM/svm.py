@@ -38,16 +38,14 @@ def getCols(label_of_interest=0):
     for i in range(1, len(correlation)):
         curName = correlation[i][0]
         if label_of_interest == Label.NumOfAwards and ('Won' in curName):  # we should ignore this when predicting num of awards
-            threshold = 0.1
             continue
 
         if label_of_interest == Label.Winner and ('Won' in curName):
-            threshold = 0.1
             continue
 
-        if label_of_interest == Label.Nominee and (('Won' in curName)):
-            threshold = 0.1
-            continue
+        if label_of_interest == Label.Nominee:
+            if 'Won' in curName or 'Nominated' in curName:
+                continue
 
         if curName in feature_names:
             if math.fabs(float(correlation[i][1 + label_of_interest.value])) > threshold:
@@ -55,6 +53,7 @@ def getCols(label_of_interest=0):
                 colsNames.append(curName)
 
     # print 'favoritCols = ', len(cols)
+    # print colsNames
 
     return cols
 
@@ -62,6 +61,7 @@ feat_train = csvToArray('../OscarDataset/feat_train.csv')
 feat_test = csvToArray('../OscarDataset/feat_test.csv')
 label_train = csvToArray('../OscarDataset/label_train.csv')
 label_test = csvToArray('../OscarDataset/label_test.csv')
+feat_test_2016 = csvToArray('../OscarDataset/feat_test_2016.csv')
 
 #
 # The first rows are names of columns
@@ -75,6 +75,7 @@ feat_train = np.array(feat_train)[1:, :].astype(float)
 feat_test = np.array(feat_test)[1:, :].astype(float)
 label_train = np.array(label_train)[1:, :].astype(int)
 label_test = np.array(label_test)[1:, :].astype(int)
+feat_test_2016 = np.array(feat_test_2016)[1:, :].astype(float)
 
 # print feature_names
 
@@ -91,6 +92,9 @@ for i in range(1, len(feat_train[0])):
 
 for i in range(1, len(feat_test[0])):
     feat_test[:, i] = preprocessing.scale(feat_test[:, i])
+
+for i in range(1, len(feat_test_2016[0])):
+    feat_test_2016[:, i] = preprocessing.scale(feat_test_2016[:, i])
 
 
 # Just printing
@@ -124,6 +128,10 @@ clf.fit(feat_train[:, cols], label_train[:, label_of_interest.value])
 
 predicted = clf.predict(feat_test[:, cols])
 
+f1=open('./predicted_for_nominee.txt', 'w')
+for i in range(len(predicted)):
+    f1.write(str(predicted[i]) + '\n')
+
 score = metrics.f1_score(label_test[:, label_of_interest.value], predicted)
 prec = metrics.precision_score(label_test[:, label_of_interest.value], predicted)
 recall = metrics.recall_score(label_test[:, label_of_interest.value], predicted)
@@ -131,6 +139,29 @@ recall = metrics.recall_score(label_test[:, label_of_interest.value], predicted)
 print("Nomination - SVM Precision: %0.2f" % (prec))
 print("Nomination - SVM Recall: %0.2f" % (recall))
 print("Nomination - SVM F-Score: %0.2f" % (score))
+
+###=================== Nominee 2016 =====================
+distances = clf.decision_function(feat_test_2016[:, cols])
+
+print 'Possible nominees:'
+
+raw_2016 = csvToArray('../OscarDataset/movies_from_2016.csv')
+title_idx = raw_2016[0].index('movie_title')
+raw_2016 = raw_2016[1:]
+
+most_likely = []
+for h in range(20):
+    max = -10000
+    max_idx = -1
+    for i in range(len(distances)):
+        if distances[i] > max:
+            max = distances[i]
+            max_idx = int(feat_test_2016[i][0]) - 2
+    most_likely.append(max_idx)
+    distances[max_idx] = -10000
+
+for i in range(len(most_likely)):
+    print raw_2016[most_likely[i]][title_idx]
 
 ###=================== SVC Winner =======================
 label_of_interest = Label.Winner
@@ -144,6 +175,12 @@ predicted = cross_validation.cross_val_predict(clf, feat_train[:, cols], label_t
 clf.fit(feat_train[:, cols], label_train[:, label_of_interest.value])
 
 predicted = clf.predict(feat_test[:, cols])
+
+print '#### Predicted values ####'
+
+f1=open('./predicted_for_win.txt', 'w')
+for i in range(len(predicted)):
+    f1.write(str(predicted[i]) + '\n')
 
 score = metrics.f1_score(label_test[:, label_of_interest.value], predicted)
 prec = metrics.precision_score(label_test[:, label_of_interest.value], predicted)
@@ -178,7 +215,7 @@ for i in range(len(predicted)):
 
 
 
-K_top = 5
+K_top = 3
 all_top_k = []
 
 total = 0

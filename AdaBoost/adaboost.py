@@ -145,7 +145,7 @@ print("Nomination - AdaBoost Recall: %0.2f" % (recall))
 print("Nomination - AdaBoost F-Score: %0.2f" % (score))
 
 ###=================== Nominee 2016 =====================
-distances = clf.predict(feat_test_2016[:, cols])
+distances = clf.decision_function(feat_test_2016[:, cols])
 
 print 'Possible nominees:'
 
@@ -160,7 +160,7 @@ for h in range(20):
     for i in range(len(distances)):
         if distances[i] > max:
             max = distances[i]
-            max_idx = i
+            max_idx = int(feat_test_2016[i][0]) - 2
     most_likely.append(max_idx)
     distances[max_idx] = -10000
 
