@@ -3,6 +3,7 @@
 from preprocessor import DataPreprocessor
 from sklearn.linear_model import Perceptron
 from sklearn.linear_model import LinearRegression
+from sklearn.neural_network import MLPClassifier
 from sklearn import cross_validation
 from sklearn import metrics
 import numpy as np
@@ -16,6 +17,7 @@ and reports on the output.
 
 # Author: Omar Elazhary <omazhary@gmail.com>
 # License: MIT
+
 
 def precision_at_k(y_true, y_predicted, confidence, k, group_by=[]):
     """
@@ -136,9 +138,11 @@ if args['test']:
 # Prepare Classifiers:
 classifiers_nomination = [
                 Perceptron(penalty='l2'),
+                MLPClassifier(),
         ]
 classifiers_win = [
                 Perceptron(penalty='l1'),
+                MLPClassifier(),
         ]
 regressors = [
                 LinearRegression(),
@@ -191,13 +195,14 @@ if args['test']:
                                        predictions)
         recall = metrics.recall_score(prep_nom.test_labels[0],
                                       predictions)
-        patk = precision_at_k(prep_nom.test_labels[0], predictions,
-                              confidence, k, years)
         print("Nomination - %s Precision: %0.2f" % (type(clf).__name__, prec))
         print("Nomination - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Nomination - %s F-Score: %0.2f" % (type(clf).__name__, score))
-        print("Nomination - %s Precision at %d: %0.2f" % (type(clf).__name__,
-              k, patk))
+        if not type(clf).__name__ == "MLPClassifier":
+            patk = precision_at_k(prep_nom.test_labels[0], predictions,
+                                  confidence, k, years)
+            print("Nomination - %s Precision at %d: %0.2f" % (
+                type(clf).__name__, k, patk))
     for clf in classifiers_win:
         predictions = clf.predict(prep_win.test_features)
         confidence = clf.decision_function(prep_win.test_features)
@@ -207,13 +212,14 @@ if args['test']:
                                        predictions)
         recall = metrics.recall_score(prep_win.test_labels[1],
                                       predictions)
-        patk = precision_at_k(prep_win.test_labels[1], predictions,
-                              confidence, k, years)
         print("Win - %s Precision: %0.2f" % (type(clf).__name__, prec))
         print("Win - %s Recall: %0.2f" % (type(clf).__name__, recall))
         print("Win - %s F-Score: %0.2f" % (type(clf).__name__, score))
-        print("Win - %s Precision at %d: %0.2f" % (type(clf).__name__,
-              k, patk))
+        if not type(clf).__name__ == "MLPClassifier":
+            patk = precision_at_k(prep_win.test_labels[1], predictions,
+                                  confidence, k, years)
+            print("Win - %s Precision at %d: %0.2f" % (type(clf).__name__,
+                  k, patk))
     for reg in regressors:
         score = reg.score(prep_awd.test_features,
                           prep_awd.test_labels[2])
@@ -221,7 +227,7 @@ if args['test']:
 
 # Run prediction:
 if args['predict']:
-    if args['pred_feat'] == None:
+    if args['pred_feat'] is None:
         raise Exception("No file provided for prediction features!!")
     pred_nom = DataPreprocessor([], nom_ignore, args['pred_feat'])
     pred_nom.preprocess()
