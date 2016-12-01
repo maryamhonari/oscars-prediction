@@ -1,10 +1,10 @@
 *.csv
 *.ods
 *.pyc
-*.png
 .Rhistory
 *.cls
 *.aux
 *.log
 *.pdf
 *.gz
+r-scripts/*.png
