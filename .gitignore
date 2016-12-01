@@ -3,3 +3,8 @@
 *.pyc
 *.png
 .Rhistory
+*.cls
+*.aux
+*.log
+*.pdf
+*.gz
