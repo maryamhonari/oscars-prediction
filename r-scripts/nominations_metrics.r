@@ -11,4 +11,4 @@ nom_table <- nom_table[, -1]
 barplot(nom_table, main="Nominee Metrics", xlab="Metric", col=colors, beside=TRUE)
 
 par(xpd=TRUE)
-legend(11, 1.07, nom_metrics$Algorithm, lty=c(1,1), lwd=c(2.5, 2.5), col=colors)
+legend(17, 1.07, nom_metrics$Algorithm, lty=c(1,1), lwd=c(2.5, 2.5), col=colors)

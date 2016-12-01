@@ -11,4 +11,4 @@ win_table <- win_table[, -1]
 barplot(win_table, main="Winner Metrics", xlab="Metric", col=colors, beside=TRUE)
 
 par(xpd=TRUE)
-legend(11, 0.67, win_metrics$Algorithm, lty=c(1,1), lwd=c(2.5, 2.5), col=colors)
+legend(17, 0.67, win_metrics$Algorithm, lty=c(1,1), lwd=c(2.5, 2.5), col=colors)
