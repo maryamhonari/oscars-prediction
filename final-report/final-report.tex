@@ -54,6 +54,18 @@
 	
 	
 	\section{Related Work}
+	Some previous works has been done on prediction Academy Awards. A prediction was made for best picture, best actor, best actress and best director awards based on winning other awards, critics ratings, bookie odds, genre and box office revenue\cite{ref1}.Since they were a business company we could not access their methods and data.
+Another approach was taken through sentiment analysis of IMDB discussion forums weighing users based on their network positions. They were able to predict nine Oscar nominations correctly two months before announcement\cite{ref2}.We decided not to include text analysis into our project.
+In one of the previous works, they collected the data by scraping Box Office Mojo and joining them with collected data from Open Movie Database (OMDB) API. For the sake of simplicity, they did data reduction and the final dataset had 516 movies of the original dataset which was gathered from Box Office Mojo with six major features including: Season, Rating, Genre, Total previous nominations, Metacritic Score, Opening weekend gross. By applying the linear regression method, they tried to predict the number of Oscar nominations\cite{ref3}. We applied linear regression to our own dataset which has more number of movies and features.
+Another work which is related to our contribution is Academy Award Prediction. In this work, they tried to predict the 85th academy awards by focusing on aggregated rating, such as from audiences and critics on Rotten Tomatoes and IMDb. The data set was made up of a list of movies that have received at least a nomination in Best Film, Best Director, Best Actor or Actress groups of the Academy Awards. In this approach, they applied a couple of learning models. It seems for Best Actress results, SVM and Feature selected SVM; for Best Actor, multinomial naive bayes; for Best Director and for Best Picture, logistic regression and feature selected LR produced best overall accuracy\cite{ref4}.
+There is another study by David Kaplan which played with more smart features about film personnel and their Resume, genre and records in other award competition. Some of those features are:
+\begin{description}
+  \item[$\bullet$ ] If the film director won the DGA (Directors Guild of America) award
+  \item[$\bullet$ ] Number of Best Actor Awards that the cast of film has previously won
+  \item[$\bullet$] Number of Best Director awards for witch the director of film was been nominated
+\end{description}
+He also showed the probability of winning Best Picture Award based on some hypothetical films with seven different sets of values. E.g. If chance of winning for film A is 8.8% and Its director wins the DGA Award, the chance leverages to 96.7%. He used a couple of logistic regression models with combination of different features. The best result was 97.7 % accuracy on predicting whether a film wins Best picture award or not\cite{ref5}.
+Although there are many approaches that have been done in award-prediction, only a few of them have paid attention to Oscar Prediction. In this project, we are going to present our contribution by using a dataset and learning methods in order to predict Oscar winners and nominations. The main idea is based on Multiple Classifier System (MCS) which none of the previous works have tried this method. Also, Increasing Correct Classification Rate (CCR) is the most important part. By using this method, we are trying to improve the previous works.
 	
 	
 	\section{Data Gathering and Description}
@@ -236,41 +248,65 @@ svm.SVC(C=1.5,kernel='poly',degree=3)
 			
 			
 			\subsubsection{Gaussian Naive Bayes}
-			\begin{description}
-          \item[$\bullet$] \bf{Some explanations before starting classification}
-            \end{description}	
-Before describing Gaussian Naïve Bayes Classification and showing results, we must mention that we have eliminated “keyword” features from the original data set and now our data set is consisting of 5043 samples and 87 features. At the first step, we applied PCA (Principle Component Analysis) on data set in order to reduce the dimension of the data (Feature Conditioning, see figure1) because as you know, too many features result in over-fitting. For this purpose, we have implemented a code in MATLAB which is “Whitening-PCA”. A whitening transformation is a linear transformation that transforms a vector of random variables with a known covariance matrix into a set of new variables whose covariance is the identity matrix meaning that they are uncorrelated and all have variance 1\cite{refFoj}. The transformation is called "whitening" because it changes the input vector into a white noise vector. After applying Whitening-PCA, we got a new data set which consists of 5043 samples and 17 features. We want to mention that although PCA’s methods have good results in data mining context but because they combine the features together then it is hard to understand the meaning of the new features. For example let us assume two features in data set: year and genre. 
-Each of them has a specific meaning by itself but a new combined feature such as $\alpha*year+\theta*genre$ is completely meaningless. Anyway, PCA’s methods always help us to regenerate data set in a useful way. 
-	
-			\begin{description}
-          \item[$\bullet$] \bf{An overview on Gaussian Naïve Bayes Classification}
-            \end{description}
-Naive Bayes methods are a set of supervised learning algorithms based on applying Bayes’ theorem with the “naive” assumption of independence between every pair of features. Given a class variable Class and a dependent feature vector $e_1$ through $e_n$ Bayes’ theorem states the following relationship:
+By applying GaussianNB()  to our code which contains 5043 samples and 87 features, we got 0.901 accuracy. After that we have tried to load dataset which has 17 features (provided by Whitening-PCA) and we got 0.9312 accuracy. These results are shown in below:	
+\begin{figure}
+\includegraphics[scale=.26]{figfoj1.png}
+ \caption{Accuracy in two modes}
+\label{fig_foj1}
+\end{figure}
+In figure \ref{fig_foj2} shows the efficacy of different portion of test data used with different folds versus correct classification rate for GNB method. As we can see, the maximum value for CCR obtained with fold 3.5 percent for this method. 
+\begin{figure}
+\includegraphics[scale=.38]{figfoj2.png}
+ \caption{Accuracy with different fold percent of test data}
+\label{fig_foj2}
+\end{figure}
 
-\begin{equation} \label{eq1}
-p(Class | e_1,e_2,...,e_n)  = \frac{p(Class)*p(e_1,e_2,...,e_n|Class)}{p(e_1,e_2,...,e_n)} 
-\end{equation}
-Using the naive independence assumption that:
-\begin{equation} \label{eq2}
-p(e_i | Class,e_1,…,e_{(i-1)},e_{(i+1)},…,e_n )  = p(e_i | Class)
-\end{equation}
+Another challenging issue is to finding the best threshold for the best correlation (0.1) which is shown in figure \ref{fig_foj3}:
+\begin{figure}
+\includegraphics[scale=.38]{figfoj3.png}
+ \caption{Accuracy with different fold percent of test data}
+\label{fig_foj3}
+\end{figure}
+Here ( Figure \ref{fig_foj4} ) is the results of GNB classification when we did not apply PCA. As we explained before, this classifier is trying to figure out that a movie is winning the best picture or nominated for the best picture (nominee classifier). As we can see, the high precision means low amount of false positive which means if a movie will win in the future and also our classifier has proved this fact.
 
-\begin{equation} \label{eq3}
-p(Class | e_1,e_2,...,e_n)  = \frac{p(Class)*\prod_{i=1} ^n p(e_i|Class)}{p(e_1,e_2,...,e_n)} 
-\end{equation}
-We will use Gaussian Naïve Bayes when our data set has numerical values. So, Gaussian PDF is applied for calculating each likelihood. The PDF of Gaussian is:
-\begin{equation} \label{eq4}
-Likelihood: p(e_i | Class)  =\frac{1}{\sqrt{2\pi \sigma^2}} e^{-\frac{(e_i-\mu)^2 }{2\sigma^2}}
-\end{equation}
-The Python has provided a classifier by name of GaussianNB() which helps us to prepare a code for GNB classification. In this context, GNB() has four parameters to set which we describe them below:
-	\begin{description}
-          \item[$\bullet$] \bf{Class prior} : probability of each class
-          \item[$\bullet$] \bf{Class count} : number of training samples observed in each class
-          \item[$\bullet$] \bf{Theta } : mean of each feature per class
-          \item[$\bullet$] \bf{Sigma} : variance of each feature per class
-            \end{description}
-This classifier is made up of six functions which calculate mean, variance, likelihoods, online update of Gaussian mean and variance for new data points and so on.
-			\subsubsection{AdaBoost}
+\begin{figure}
+\includegraphics[scale=.35]{foj4.png}
+ \caption{Evaluation of GNB }
+\label{fig_foj4}
+\end{figure}
+
+In the following, we applied Forward Selection(FS) and Backward Elimination(BE) in order to find the number of the best features. We provided two different codes in python which they simulate FS and BE method. After applying these methods, we found the number of best features as the following in the Figure \ref{fig_foj5}.
+
+\begin{figure}
+\includegraphics[scale=.35]{foj5.png}
+ \caption{Evaluation of GNB in terms of best features}
+\label{fig_foj5}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=.4]{foj6.png}
+ \caption{Evaluation of GNB with PCA}
+\label{fig_foj6}
+\end{figure}
+By knowing these facts, we can evaluate GNB classifier with these selected features as the above. As you see, FS method returned 21 features which supposed to obtain the best CCR among GNB and GNB+PCA. By feeding FS’s features and BE’s features to GNB classifier, we got the results as the following in the Figure \ref{fig_foj6}.
+
+It is obvious that in terms of accuracy, PCA works better than FS and BE in this context. GNB evaluation with Forward Selection method in the Figure \ref{fig_foj7}.
+
+\begin{figure}
+\includegraphics[scale=.35]{foj7.png}
+ \caption{Evaluation of GNB with FS}
+\label{fig_foj7}
+\end{figure}
+GNB evaluation with Backward Elimination method in the Figure \ref{fig_foj8}.
+
+
+\begin{figure}
+\includegraphics[scale=.35]{foj8.png}
+ \caption{Evaluation of GNB with BE}
+\label{fig_foj8}
+\end{figure}
+
+	\subsubsection{AdaBoost}
 			\label{adaboost}
 			Adaptive boosting is also one of our best learners that we have tried. What basically this classifier/regressor does is that it takes advantage of a number of weak learners to create a strong learner. As mentioned in \cite{adaboost}, unlike support vector machines and neural nets, the training phase of AdaBoost only selects features which have predictive power; hence, faster running time even when a lot of features are around. But what we were surprised about was the fact that unlike SVMs we did not spend a significant amount of time and trial/error to tune the classifier. In fact, in our very first attempt we got results that were clearly better than that of the SVMs. (We will elaborate on the results later). For regression/classification we used the following setting:\\
 AdaBoostRegressor(DecisionTreeRegressor(max\_depth=20),\\
@@ -417,8 +453,18 @@ In fact, the base estimator that is used here is a Decision Tree. Moreover, we a
 		\par
 		Another approach would be to try clustering, and see if we can group movies based on how similar they are, which might be able to indicate winning groups. This is as opposed to trying to classify  and seperate them.
 	
-	\section{Contributions}
-	
+\section{Contributions of Project Members}
+\subsection{Fojan Babaali}
+Fojan was responsible for implementing and experimenting with Gaussian Naive Bayes algorithm. She collaborated with Maryam in exploring related works in the literature. Moreover, she contributed in preparing mid-term/final reports and final presentation.
+
+\subsection{Maryam Honari Jahromi}
+Maryam was responsible for implementing the Logistic Regression Algorithm. She collaborated with Fojan in the exploring the related works. She also collaborated with Ali in refining the dataset and repeating the work of Chuan Sun (creator of the dataset). Moreover, she contributed in preparing mid-term/final reports and final presentation.
+
+\subsection{Omar Elazhary}
+Omar was in charge of the Perceptrons, Linear Regression and Neural Networks. He also handled preprocessing of the data and obtaining Pearson's correlation results. He, as well, contributed in preparing mid-term/final reports. Furthermore, he contributed in preparing result visualizations and presenting in class.
+
+\subsection{Ali Mashreghi}
+Ali was in charge of the SVM's and AdaBoost. He collaborated with Maryam in refining the dataset, repeating the work of Chuan Sun. He also collected historical data. He, as well, contributed in preparing mid-term/final reports. Furthermore, he contributed in preparing and presenting the presentation.	
 	
 	\begin{thebibliography}{1}
 
