@@ -191,6 +191,7 @@ Having that in mind, and based on what some works in the literature, splitting t
 	
 	
 	\section{Methods}
+	This section discusses the methods we used in order to examine whether or not the gathered data were adequate to predict nominees and winners. The idea behind this was the following; we assume that data pulled from various sites (social media and others) regarding movies and their related features should be enough to predict whether or not a movie would get nominated or win. As such, we would use that data and feed it into various classifiers and regressors, then check to see if we achieved a reasonable performance level.
 	
 		\subsection{Classification}
 		
@@ -229,8 +230,20 @@ algorithm="SAMME",n\_estimators=200)
 In fact, the base estimator that is used here is a Decision Tree. Moreover, we are using the discrete version of the AdaBoost (SAMME) as we are interested in getting class labels as predictions rather than class probabilities.
 			
 			\subsubsection{Perceptrons}
+			Another approach we tried was Perceptrons. Ideally, perceptrons would be able to separate the data linearly, into nominees and non-nominees, and then winners and losers. After performing 10-fold cross-validation on our training set, we were able to tune the parameters to the following:
+			\begin{itemize}
+				\item For nominations, the classifier was regularized using \emph{l2} in order to emphasize the more significant features.
+				\item For wins, the classifier was regularized using \emph{l1}.
+			\end{itemize}
+			These two settings showed the most promising results during cross-validation.
+			These were the best tuning parameters possible given the data's non-linear distribution.
 			
 			\subsubsection{Neural Networks (MLPs)}
+			The last approach in this section was neural nets (or multi-layered perceptrons) as they are called in \emph{scikit-learn}. These were also run through cross-validation (10-fold), and tuned for the best possible performance.
+			\begin{itemize}
+				\item For nominations, the network consists of 1 hidden layer of 200 nodes. This yielded the best results during cross-validation.
+				\item For wins, the network size was increased to accommodate two hidden layers of 200 and 250 nodes respectively.
+			\end{itemize}
 			
 		\subsection{Regression}
 			
@@ -241,6 +254,7 @@ In fact, the base estimator that is used here is a Decision Tree. Moreover, we a
 			Covered in \ref{adaboost}.			
 			
 			\subsubsection{Linear Regression}
+			For linear regression, and after experimenting with all possible variations of the tuning parameters, the best possible fit was with its default settings, i.e. $fit_intercept=True$, and $normalize=False$. The $normalize$ setting was set to $False$ mainly due to the fact that the dataset was already scaled earlier on the the data preprocessing step. Linear regression, much like the perceptron, would try to estimate a line that runs closest to as much as possible of the points in the set, and use the equation from that estimated line in order to predict the dependent variable (in this case, the number of awards).
 	
 	\section{Results}
 	
