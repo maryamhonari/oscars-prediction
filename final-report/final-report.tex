@@ -228,9 +228,11 @@ svm.SVC(C=1.5,kernel='poly',degree=3)
 			
 			\subsubsection{Logistic Regression}
 			Another method that we used was regularized logistic regression from the scikit-learn library. As nomination and winning an award both have 2 labels to predict, this method seems to be a good choice. In order to tune this classifier, we applied 10 fold cross-validation on training data. we observed that liblinear solver does better than other ones like SAG. Here by is our tuning parameters:
-			\item Predicting nomination, we set L2 regularization strength to 0.001 and got 27% for F1-score on cross-validation.
-			\item Predicting winning, we set L1 regularization strength to 10 and got 32% for F1-score on cross-validation.
-			On test data we got better accuracy for both nomination and winning of best picture award.
+			\begin{itemize}
+				\item Predicting nomination, we set L2 regularization strength to 0.001 and got 27% for F1-score on cross-validation.
+				\item Predicting winning, we set L1 regularization strength to 10 and got 32% for F1-score on cross-validation.
+				On test data we got better accuracy for both nomination and winning of best picture award.
+			\end{itemize}
 			
 			
 			\subsubsection{Gaussian Naive Bayes}
