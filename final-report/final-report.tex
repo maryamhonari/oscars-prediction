@@ -3,6 +3,7 @@
 \usepackage{url}
 \usepackage{graphicx}
 \usepackage{pbox}
+\usepackage{caption}
 
 \hyphenation{op-tical net-works semi-conduc-tor}
 \newcommand\MYhyperrefoptions{bookmarks=true,bookmarksnumbered=true,
@@ -12,6 +13,7 @@
 	pdfsubject={Typesetting},%<!CHANGE!
 	pdfauthor={Michael D. Shell},%<!CHANGE!
 	pdfkeywords={Computer Society, IEEEtran, journal, LaTeX, paper, template}}
+\captionsetup{skip=10pt}
 
 \begin{document}
 	\title{Does Popularity Influence the Academy Awards?}
@@ -182,7 +184,7 @@ Nominated X Features Used in Prediction:\\
 Some of the Used Genres and Plot Keywords:\\
 \textit{\textbf{genre=Romance,	genre=Action,	genre=War,	genre=Thriller,	genre=Biography,	 genre=History,	genre=Drama, keyword=jazz age,	keyword=broadway play,	keyword=gallantry,	keyword=republic,	keyword=casablanca morocco,	keyword=visa,	keyword=boer war,	keyword=longshoreman	, keyword=rose, 	keyword=dangerous job,	keyword=coin toss}}
 
-\subsection{A New Technique for Generating Test and Train Sets}
+\subsection{A New Technique for Generating Test and Train Sets} \label{train_test_set}
 There are a number of ways to generate test/train sets. However, not all of them seem reasonable. For example, generating test/train sets using randomness does not seem logical because the number of Best Picture nominees/winners is small compared to the number of movies in our dataset. So, if we are unlucky we might not preserve the same distribution in our test/train sets as the original dataset. \\
 Having that in mind, and based on what some works in the literature, splitting test and train using \textbf{\textit{title year}} feature is a good idea. On simple way is, for example, to including movies after 2000 in our test set and movies before 2000 in our train set. However, we thought that since \textbf{\textit{title year}} is a crucially important feature (as proved with the results of the Pearson's correlation), it is better to have representative of each \textit{period of time} in our test set. In particular, out of every 4 years we put all the movies from one year into our test and the rest into our train set. This is done by computing the year modulo 4; if the remainder is 0 that movie goes to test set, otherwise, it goes into the train set. As a result, our test set contains nearly 25$\%$ of the data.
 
@@ -193,6 +195,16 @@ Having that in mind, and based on what some works in the literature, splitting t
 	This section discusses the methods we used in order to examine whether or not the gathered data were adequate to predict nominees and winners. The idea behind this was the following; we assume that data pulled from various sites (social media and others) regarding movies and their related features should be enough to predict whether or not a movie would get nominated or win. As such, we would use that data and feed it into various classifiers and regressors, then check to see if we achieved a reasonable performance level.
 	
 		\subsection{Classification}
+			First, we experimented with classification methods in order to attempt to predict whether a movie would get nominated or not. And whether or not a movie would win the \emph{Best Picture Award}. The classifiers we tested for this were:
+			\begin{itemize}
+				\item Perceptrons
+				\item SVMs
+				\item AdaBoost
+				\item Gaussian Naive Bayes
+				\item Logistic Regression
+				\item Neural Networks
+			\end{itemize}
+			These are discussed in detail below.
 		
 			\subsubsection{Support Vector Machines}
 			
@@ -298,7 +310,14 @@ In fact, the base estimator that is used here is a Decision Tree. Moreover, we a
 					\end{itemize}
 			\end{itemize}
 			
-		\subsection{Regression}
+		\subsection{Regression}\label{subsec:regression}
+			In this section, and as a further attempt to check the suitability of the data for the task at hand, we added regression in order to predict the total number of awards a movie would win. The regressors used in this experiment are:
+			\begin{itemize}
+				\item Linear Regression
+				\item SVM Regressors
+				\item AdaBoost Regressors
+			\end{itemize}
+			These are discussed in detail below.
 			
 			\subsubsection{Support Vector Regressors (SVRs)}
 			Covered in \ref{svm}.
@@ -310,10 +329,91 @@ In fact, the base estimator that is used here is a Decision Tree. Moreover, we a
 			For linear regression, and after experimenting with all possible variations of the tuning parameters, the best possible fit was with its default settings, i.e. $fit_intercept=True$, and $normalize=False$. The $normalize$ setting was set to $False$ mainly due to the fact that the dataset was already scaled earlier on the the data preprocessing step. Linear regression, much like the perceptron, would try to estimate a line that runs closest to as much as possible of the points in the set, and use the equation from that estimated line in order to predict the dependent variable (in this case, the number of awards).
 	
 	\section{Results}
-	
-	
-	\section{Discussion}
-	
+		This section contains the results of testing our classifiers on the test set that was generated using the techniques discussed in section \ref{train_test_set}.
+		All classifiers were tested on the test-set and evaluated based on their precision, recall, and F1-scores. All regressors were also evaluated using the same test set, and evaluated based on their $R^2$ score.		
+		\begin{figure}
+			\centering
+			\includegraphics[scale=0.4]{metrics_nom}
+			\caption{Nomination Classifier Results}
+			\label{fig_metrics_nom}
+		\end{figure}
+		\begin{figure}
+			\centering
+			\includegraphics[scale=0.4]{metrics_win}
+			\caption{Results for win classifiers}
+			\label{fig_metrics_win}
+		\end{figure}	
+		\begin{table}
+			\centering
+			\begin{tabular}{|c|c|c|c|}
+				\hline
+				Algorithm & Precision & Recall & F1-score \\
+				\hline
+				Perceptron & 0.58 & 0.58 & 0.58 \\
+				SVM & 0.70 & 0.59 & 0.64 \\
+				AdaBoost & 0.81 & 0.69 & 0.74 \\
+				Gaussian NB & 0.65 & 0.50 & 0.56 \\
+				Logistic Regression & 0.91 & 0.40 & 0.55 \\
+				MLPs & 0.62 & 0.63 & 0.62 \\
+				\hline
+			\end{tabular}
+			\caption{Nomination Classifier Results}
+			\label{tab:nom_metrics}
+		\end{table}
+		\begin{table}
+			\centering
+			\begin{tabular}{|c|c|c|c|}
+				\hline
+				Algorithm & Precision & Recall & F1-score \\
+				\hline
+				Perceptron & 0.40 & 0.11 & 0.17 \\
+				SVM & 0.29 & 0.09 & 0.14 \\
+				AdaBoost & 0.43 & 0.27 & 0.33 \\
+				Gaussian NB & 0.52 & 0.23 & 0.31 \\
+				Logistic Regression & 0.58 & 0.32 & 0.41 \\
+				MLPs & 0.33 & 0.32 & 0.32 \\
+				\hline
+			\end{tabular}
+			\caption{Wins Classifier Results}
+			\label{tab:win_metrics}
+		\end{table}		
+		\subsection{Classifiers}
+		The results for the best picture award nominations can be seen in figure \ref{fig_metrics_nom}, whereas those for winners can be found in figure \ref{fig_metrics_win}.
+		\newline
+		\textbf{Nominations:} As can be seen in figure \ref{fig_metrics_nom}, the best precision was achieved with the logisitc regressor, followed closely by AdaBoost. The best recall was achieved by AdaBoost, and then MLPs. Not surprisingly, the best F1 measure was achieved by AdaBoost, and in second place was the SVM. The detailed results are given in table \ref{tab:nom_metrics}.
+		\newline
+		\textbf{Wins:} As can be seen in figure \ref{fig_metrics_win}, the best precision was achieved with -again- the logistic regressor, followed closely by the gaussian naive bayes classifier. The best recall was a tie between the logistic regressor and MLPs. But, eventually, the best F1-score was achieved by the logistic regressor, similar to the work done in \cite{ref4}. The detailed results are given in table \ref{tab:win_metrics}.		
+		\subsection{Regressors}
+		As was discussed in section \ref{subsec:regression}, the regressors were used in order to estimate the total number of awards a movie would win. According to our tests, the best performance was achieved using AdaBoost, then at a close second was the SVM regressor, and finally at a very distant third, the linear regressor. The details can be seen in table \ref{tab:awd_r2}.
+		\begin{table}
+			\centering
+			\begin{tabular}{|c|c|}
+				\hline
+				Regressor & $R^2$ Score \\
+				\hline
+				AdaBoost & 0.60 \\
+				SVM Regressor & 0.40 \\
+				Linear Regression & $-4.13760627174991E+29$ \\
+				\hline
+			\end{tabular}
+			\caption{Number of Awards Regression Results}
+			\label{tab:awd_r2}
+		\end{table}	
+	\section{Discussion and Future Work}
+		As can be seen from the previous section, our classifiers performed adequately when it came to predicting whether a movie would be nominated or not. With a maximum F1 score (AdaBoost) of 0.74, we can say that the classifier is certainly not being overfit, is giving reasonable predictions. It should also be noted that AdaBoost did in some part rely on decision trees, which are better suited to model cognitive decision making as opposed to the numerical estimations the other classifiers make. It is also worth noting that decision trees are also better suited to dealing with the categorical nature of our dataset.
+		\par
+		We deduce that the reason our linear separators did not work so well is due to two major issues:
+		\begin{enumerate}
+			\item The data is not linearly separable, as is evident by the performance of the perceptrons and linear regressor.
+			\item The data is severely unbalanced. For each year there is a huge amount of movies, only a small portion of which gets nominated, and only one of those wins per year.
+		\end{enumerate}
+		Another lingering issue is that we had to augment our dataset with data about nominations and a movie's IMDB score in order to get reasonable performance. That implies that, on its own, movie popularity measured by its social media likes (as well as those of its creators, actors, ...etc.) is not enough to adequately predict if a movie is going to get nominated or not. It certainly is not enough to predict if a movie would win or not, as is evident by the low metrics recorded for that scenario (even after including data about nominations).
+		\par
+		One other avenue we explored was whether or not a movie's nomination or win could be influenced by its budget, as it would typically include its advertising budget as well. This was rapidly disproved during the feature selection stage, where the correlation between the movie's budget and nomination/win was statistically insignificant; i.e. between 0.1 and -0.1 as measured by pearson's correlation coefficient.
+		\par
+		Given more time, we would like to explore other classification alternatives, for instance decision trees and random forests. We would also like to augment the dataset with user and critic reviews as those can be a strong indicator of how well a movie is performing with respect to the general public. This would initially involve sentiment analysis and other techniques to get a better sense of how a movie is received by other online presence.
+		\par
+		Another approach would be to try clustering, and see if we can group movies based on how similar they are, which might be able to indicate winning groups. This is as opposed to trying to classify  and seperate them.
 	
 	\section{Contributions}
 	
