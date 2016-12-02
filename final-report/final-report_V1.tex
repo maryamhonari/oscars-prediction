@@ -1,0 +1,388 @@
+\documentclass[journal,transmag]{IEEEtran}
+
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{pbox}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+\newcommand\MYhyperrefoptions{bookmarks=true,bookmarksnumbered=true,
+	pdfpagemode={UseOutlines},plainpages=false,pdfpagelabels=true,
+	colorlinks=true,linkcolor={black},citecolor={black},urlcolor={black},
+	pdftitle={Bare Demo of IEEEtran.cls for Computer Society Journals},%<!CHANGE!
+	pdfsubject={Typesetting},%<!CHANGE!
+	pdfauthor={Michael D. Shell},%<!CHANGE!
+	pdfkeywords={Computer Society, IEEEtran, journal, LaTeX, paper, template}}
+
+\begin{document}
+	\title{Does Popularity Influence the Academy Awards?}
+	\author{
+		\IEEEauthorblockN{
+			Fojan Babaali,
+			Maryam Honari Jahromi,
+			Omar Elazhary,
+			Ali Mashreghi
+		}
+		\IEEEauthorblockA{
+			\IEEEauthorrefmark{1}
+			University of Victoria, Victoria, Canada
+		}
+	}
+	\IEEEtitleabstractindextext{
+		\begin{abstract}
+			In this project we are going to predict whether a movie will win an Academy Award or not. Our main data is the Kaggel’s IMDB information on movies. However, we will add supplementary data about the history of Oscars' winners/nominees. We use the information after the movie was released since social media information -which is an important part of our features- only becomes stable a few months after release. We also intend to find the suitable algorithm to classify movies properly. Among the candidate algorithms are Naive bayes classifiers and linear regressors. We will also attempt to define a criteria by which movies are chosen.
+		\end{abstract}
+		\begin{IEEEkeywords}
+			Oscars, Movies, Prediction, Classification, Machine Learning, Data Mining
+		\end{IEEEkeywords}
+	}
+	\maketitle
+	\IEEEdisplaynontitleabstractindextext
+	\IEEEpeerreviewmaketitle
+	
+	\begin{enumerate}[Highlights]
+\item In section \textit{Features Used in Prediction}, we have explicitly mentioned the features that we use for prediction.
+
+\item In the whole process of feature selection we only consider training data.
+
+\item After the mid-term report we tried AdaBoost and Neural Networks on our data.
+
+\item We applied a rather new technique based on modulo to generate test/train set.
+\end{enumerate}
+	\section{Introduction}
+	\section{Related Work}
+Some previous works has been done on prediction Academy Awards. A prediction was made for best picture, best actor, best actress and best director awards based on winning other awards, critics ratings, bookie odds, genre and box office revenue\cite{ref1}.Since they were a business company we could not access their methods and data.
+Another approach was taken through sentiment analysis of IMDB discussion forums weighing users based on their network positions. They were able to predict nine Oscar nominations correctly two months before announcement\cite{ref2}.We decided not to include text analysis into our project.
+In one of the previous works, they collected the data by scraping Box Office Mojo and joining them with collected data from Open Movie Database (OMDB) API. For the sake of simplicity, they did data reduction and the final dataset had 516 movies of the original dataset which was gathered from Box Office Mojo with six major features including: Season, Rating, Genre, Total previous nominations, Metacritic Score, Opening weekend gross. By applying the linear regression method, they tried to predict the number of Oscar nominations\cite{ref3}. We applied linear regression to our own dataset which has more number of movies and features.
+Another work which is related to our contribution is Academy Award Prediction. In this work, they tried to predict the 85th academy awards by focusing on aggregated rating, such as from audiences and critics on Rotten Tomatoes and IMDb. The data set was made up of a list of movies that have received at least a nomination in Best Film, Best Director, Best Actor or Actress groups of the Academy Awards. In this approach, they applied a couple of learning models. It seems for Best Actress results, SVM and Feature selected SVM; for Best Actor, multinomial naive bayes; for Best Director and for Best Picture, logistic regression and feature selected LR produced best overall accuracy\cite{ref4}.
+There is another study by David Kaplan which played with more smart features about film personnel and their Resume, genre and records in other award competition. Some of those features are:
+\begin{description}
+  \item[$\bullet$ ] If the film director won the DGA (Directors Guild of America) award
+  \item[$\bullet$ ] Number of Best Actor Awards that the cast of film has previously won
+  \item[$\bullet$] Number of Best Director awards for witch the director of film was been nominated
+\end{description}
+He also showed the probability of winning Best Picture Award based on some hypothetical films with seven different sets of values. E.g. If chance of winning for film A is 8.8% and Its director wins the DGA Award, the chance leverages to 96.7%. He used a couple of logistic regression models with combination of different features. The best result was 97.7 % accuracy on predicting whether a film wins Best picture award or not\cite{ref5}.
+Although there are many approaches that have been done in award-prediction, only a few of them have paid attention to Oscar Prediction. In this project, we are going to present our contribution by using a dataset and learning methods in order to predict Oscar winners and nominations. The main idea is based on Multiple Classifier System (MCS) which none of the previous works have tried this method. Also, Increasing Correct Classification Rate (CCR) is the most important part. By using this method, we are trying to improve the previous works.
+	
+\section{Data Gathering and Description}
+As mentioned previously, our main dataset was a collection roughly 5000 movies from Kaggle created by \emph{Mr. Chuan Sun} \cite{refCreator}. However, since we needed some features to be able to predict Oscar nominees and winners we started gathering historical data. To do this, we wrote a crawler in Java which went through the search results of the official Oscars' website (\url{http://www.oscars.org}) and collected all necessary information on winners and nominees from as early as 1916. Our crawler does that simply by parsing the html pages returned as search result. It also gathers the names of people who won a specific award.\\
+Important features that we added were whether each movie in the dataset was nominated for each category or not. Also, we added features that tell us whether the movie has won a specific award or not (Figure \ref{fig4}). Based on this, we added a column which specifies the number of awards won by a movie. However, when we want to predict if a movie is going to be nominated for Best Picture we ignore all other features regarding nomination. The reason is that this kind of prediction is supposed to be used on the time before nominees' names are released. Similarly, when we aim at predicting if a movie is going to win an award or not, we ignore features regarding winning other awards. The reason again is that this classifier is supposed to be used before Oscars' ceremony. The same goes for predicting number of awards for which we ignore the columns that say whether the movie has won an award.\\
+\textbf{Note:} Though we never use \emph{Award Winning Features}, we still include them in the dataset to facilitate the process of analyzing our results. For example, when we want to see the information on some movie that is always classified wrong we may use these information to get a better understanding of our data.\\
+
+\subsection{Missing Movies}
+The dataset that we downloaded from Kaggle has mostly social media and popularity features (e.g. movie facebook likes, imdb score). However, our main goal here is to predict Oscar winners/nominees. With that in mind, there were near 250 movies which were nominated for the Best Picture Award over the past century but were absent in our dataset; hence, we collected the title of these movies using our Java crawler and also repeated the work of Chuan Sun (creator of the dataset) to add the missing 250 movies. To to this we used the information provided on this blog \cite{refCreator}. \\
+An important point is that unfortunately  the way that IMDB links are retrieved in Chuan Sun's codes is a little bit problematic. It first searches the title of the movie in IMDB using IMDB's search API, and after that uses the first link in the result as the link for the movie. However, this does not always work fine since sometimes the order of the results is not as desired. So, we refined this part of code to consider the link whose related title matches the title that we have. This way we managed to reduce the number of mistakes.
+
+\paragraph*{Movies from 2016} We first retrieved  the title of 100 good 2016 movies from  \url{rottentomatoes.com} and used Chuan Sun's code to collect social and IMDB information on these movies. We used this dataset to predict potential nominees for the upcoming Oscar ceremony in 2017. 
+
+\begin{figure}
+
+\includegraphics[scale=.45]{fig1.png}
+ \caption{Distribution of movies according to best picture nominated/winner statistics.}
+\label{fig4}
+\end{figure}
+
+
+\begin{figure}
+
+\includegraphics[scale=.5]{fig22.png}
+ \caption{Number of movies based on IMDB rating.}
+\label{fig1}
+\end{figure}
+
+\begin{figure}
+
+\includegraphics[scale=.22]{fig2.png}
+ \caption{Number of movies based on year.}
+\label{fig2}
+\end{figure}
+
+\begin{figure}
+
+\includegraphics[scale=.30]{fig3.png}
+ \caption{Number of movies based on genres.}
+\label{fig3}
+\end{figure}
+
+\subsection{Some Data Statistics}
+We have nearly 5000 movie titles in our dataset. Some statistics about these movies are as follows:
+
+\begin{enumerate}
+\item{\textbf{IMDB score:}} IMDB score is an important feature in our dataset. Figure \ref{fig1} shows a pie diagram on distribution of movies based on rating.
+
+\item{\textbf{Title year:}} Naturally, in recent years the number of movies have grown rapidly and our dataset reflects this growth, as well. Overall, as illustrated in Figure \ref{fig2}, we have 261 movies earlier than 1980, 291 movies in 1980-1990, 786 movies in 1990-2000, 2100 movies from 2000 to 2010, and finally 1497 movies from 2010 to present time.
+
+\item{\textbf{Director:}} There are 2399 directors involved in these movies. There are 36 directors who have each at least 10 movies. Top directors by the number movies they have in our dataset are: Woody Allen with 22 titles, Clint Eastwood with 20, Martin Scorsese with 20, Ridley Scott with 17, and Steven Soderbergh, Spike Lee and Tim Burton all with 16 movies. Also a total of 2363 directors have less than 10 and 1537 directors who have only one movie in our dataset.
+
+\item{\textbf{Actor/Actress:}} There are 6258 actors/actresses involved in all these movies. There are 222 that have acted in at least 10 movies, and 6036 who have acted in less than 10 movies. Top actors/actress by the number of movies are: Robert De Niro with 54 movies, Morgan Freeman with 47 movies, Johnny Depp with 41 movies, Bruce Willis with 40 movies, Matt Damon with 38 movies, and Steve Buscemi with 37 movies. Also 3901 actors/actress are present in our dataset who have been involved in one movie only.
+
+\item{\textbf{Genres and plots:}} Among the most frequent genres are Action, Drama, Romance, Adventure, Comedy, Sci-Fi and Biography. The most frequent genre is obviously Drama. And after that Comedy, Action and Romance follow. Figure \ref{fig3} shows how many movies include each of these genres. Furthermore, plot keywords are another feature in our dataset. However, in order to be able to use them, we split keywords from genres and plots to different. Though this resulted in a huge matrix, we were able to get some important keywords such as \emph{racism} and \emph{suicidal thoughts} that help us in both classification and regression.
+
+\item{\textbf{Social networks}} The only social network information that is present in this dataset is on facebook likes of movies, directors, actors/actresses and cast members overall. The highest movie facebook likes belongs to Interstellar with 349000 likes, then Django Unchained with 199000 likes, Batman v Superman: Dawn of Justice with 197000 likes and Mad Max: Fury Road with 191000 likes. There are 749 movies that have less than 1000 likes on facebook.
+\end{enumerate}
+
+\subsection{Description of All Features}
+\begin{figure}
+\includegraphics[scale=.22]{fig_feat.png}
+ \caption{Features in our dataset}
+\label{fig_feat}
+\end{figure}
+
+Now, we aim to describe each of the features present in our dataset. A simple diagram showing the name of all initial features of the Kaggle dataset downloaded from \cite{refCreator} can be found in Figure \ref{fig_feat}.
+
+\begin{enumerate}
+\item{\textbf{\textit{color:}}} Shows the color of the movie. Its value can be either \textit{Black/White} or \textit{Color}.
+
+\item{\textbf{\textit{director name:}}} The name of the director as a string of characters.
+\item{\textbf{\textit{director facebook likes:}}} Number of likes on director's facebook page.
+\item{\textbf{\textit{actor X name:}}} X can be 1, 2 or 3. It is the name of the first, second or third most important actor/actress. 
+\item{\textbf{\textit{actor X facebook likes:}}} The number of likes on the actor/actress's facebook page.
+\item{\textbf{\textit{cast total facebook likes:}}} The overall number of facebook likes on pages of all cast and crew.
+\item{\textbf{\textit{movie facebook likes:}}} Number of facebook likes of the movie. 
+\item{\textbf{\textit{imdb score:}}} The rating of the movie on IMDB which is a number with one floating point between 0 and 10.
+\item{\textbf{\textit{num voted users:}}} Number of users who rated the movie on IMDB.
+\item{\textbf{\textit{num user for reviews:}}} Number of users who wrote a review for the movie on IMDB.
+\item{\textbf{\textit{num critic for reviews:}}} Number of critics who wrote a review for the movie on IMDB.
+\item{\textbf{\textit{facenumber in poster:}}} Number of human faces on the primary poster of the movie.
+\item{\textbf{\textit{plot keywords:}}} Keywords in the movie plot separated by pipe ($|$) character. We split these features into \textit{keyword=} columns.
+\item{\textbf{\textit{keyword=X:(Added by us)}}} X is a word or collection of words. This feature is binary; 1 if the keyword is found in \textit{plot keywords}, 0 otherwise.
+\item{\textbf{\textit{genres:}}} Genres of the movie separated by pipe ($|$) character. We split these features into \textit{genre=} columns..
+\item{\textbf{\textit{genre=X:(Added by us)}}} X is a genre of movie. This feature is binary; 1 if the keyword is found in \textit{genres} feature, 0 otherwise.
+\item{\textbf{\textit{movie title:}}} The name of the movie as a string.
+\item{\textbf{\textit{title year:}}} The year that the movie was released.
+\item{\textbf{\textit{duration:}}} Duration of the movie in minutes.
+\item{\textbf{\textit{country:}}} The country that produced the movie.
+\item{\textbf{\textit{aspect ratio:}}} Aspect ratio of the movie, for example if the screen is 16:9, the ratio will be 1.78.
+\item{\textbf{\textit{content rating:}}} Content rating of the movie, e.g. PG 13 which is not appropriate for children under 13.
+\item{\textbf{\textit{language:}}} Language of the movie.
+\item{\textbf{\textit{budget:}}} The budget of the movie.
+\item{\textbf{\textit{gross:}}} Gross income of the movie.
+\item{\textbf{\textit{movie imdb link:}}} The url of the movie on IMDB.
+\item{\textbf{\textit{Nominated X: (Added by us)}}} A binary feature indicating whether a the movie has been nominated for award category X. For example, \textit{Nominated Art Direction}
+\item{\textbf{\textit{Won X:(Added by us)}}} A binary feature indicating whether a the movie has won a specific award X. For example, \textit{Won Art Direction}
+\item{\textbf{\textit{Num of Awards:(Added by us)}}} The number of all awards won by that movie. This is bascilly the sum of \textit{Won X} features for that movie.
+\end{enumerate}
+
+\textbf{Note:} The columns \textbf{Nominated Best Picture}, \textbf{Won Best Picture} and \textbf{Num of Awards} turn into our class labels to predict.
+
+\subsection{Preprocessing and Refining the Dataset}
+The first thing that we did for refining our data was to remove mistakes from the \textit{year} feature. In the original dataset in many cases the years extracted from IMDB are wrong. However, we knew that a lot of movies in our dataset have been nominated for at least one Academy Award. Therefore, using the results of our crawler we could retrieve the correct year of the movies and replace them in the dataset.\\
+
+Then we moved on to preprocessing the data. Firstly, the data is loaded from the csv file. Since everything that is read by python from csv is essentially a string type, each value is checked for its convertibility to a numeric type, and then converted accordingly. Empty values represented by '' are converted to the standard numpy ``NaN" value. The result of this process is two typed 2D arrays, the first containing features as specified by the preprocessor formatted as $[$ \textit{$<$number-of-samples$>$, $<$number-of-features$>$} $]$, and the second contains class labels formatted as $[$ \textit{$<$number-of-labels$>$, $<$number-of-samples$>$} $] $.\\
+The second step is essentially dealing with all empty/missing values from the earlier step. This is accomplished by using scikit-learn’s ``Imputer" functionality. The ``Imputer" function is used on a per-feature basis (labels are assumed not to hold empty values). As a filling strategy, the \textit{most-frequent} mode is used. The reasoning behind this is quite simple. These are mostly categorical data, i.e. director names, actor names, and others. The mean, in this case, would make no sense. The median could be used, as it represents a single value, however, it does not accurately give a sense of how the data is distributed. Neither does the mode, for that matter, however, it is the most logical choice among the three. Ideally, the dataset would be complete, or need to be completed by hand in order to fill in the gaps. So, this could be considered a weakness.\\
+The third step is converting all categorical data into numerical data capable of being processed by scikit-learn’s methods. This is done using scikit-learn’s ``LabelEncoder" functionality, which results in string values being mapped to numbers (usually their indices in an array). These are then substituted into the data. Another alternative was to pipe the result of the ``LabelEncoder" through a ``OneHotEncoder" to apply the binary technique discussed in class. This, however, would result in a larger matrix. And given the larger number of features that had been initially identified (roughly 8000), increasing matrix size would be considered disadvantageous, and was abandoned in favor of just using the ``LabelEncoder".
+
+
+\subsection{Feature Selection and Dimensionality Reduction}
+Two of the features already given in the dataset consist of delimited genres and plot keywords. These were expanded into unique values per genre and unique values per keyword. Each additional feature would be encoded as a boolean flag, whereby if a movie is assigned a particular genre/keyword, its corresponding flag would be switched on (1), otherwise it would be switched off (0). This resulted in a large amount of extra features.\\
+Due to the large amount of features and the large time consumed by processing them, a feature selection and dimensionality reduction strategy was considered. Pearson’s correlation coefficient was calculated for each feature and each label. The feature-label combinations whose absolute correlation was greater than 0.1 (i.e. strength of the correlation, regardless of its nature) were the ones considered later for classification/regression. Variations based on team-member judgement on what would improve classification quality were later used. This is discussed later with each individual algorithm applied.\\
+\textbf{Note:} As Dr. Fyshe pointed out, we were careful to select important features only using our training data, since including test data in feature correlation results in overfitting. \\
+
+\subsection{Features Used in Prediction}
+Basically, when we want to predict each of the class labels (i.e. Best Picture Nominee, Winner and Number of Awards) we use all the features whose correlation value the desired class label is above 0.1. (This selection of features is base only on the Training Data.) The reason for this threshold is that except for \textbf{\textit{Nominated X}} features most of our correlation values are below 0.2 and if we do consider a rather high threshold there will not be enough features for the classifier/regressor to use. Here is the list of features that we use for prediction. Note that we only mention some of the \textbf{\textit{keyword=X}} and \textbf{\textit{genre=}} features as they are quite a few. Also, we mention any feature whose correlation result with respect to \textit{at least} on class label is above 0.1.\\
+Original Features Used in Prediction:\\
+\textit{\textbf{ color, duration,	gross,	num\_voted\_users, 	facenumber\_in\_poster,	num\_user\_for\_reviews,	country,	title\_year,	imdb\_score	, movie\_facebook\_likes}} \\
+
+\noindent
+Nominated X Features Used in Prediction:\\
+\textit{\textbf{Leading Actor/Actress, Supporting	 Actor/Actress, Art Direction, Cinematography, Costume Design, Directing, Film Editing, Makeup,  Music Scoring, Music Song, Sound, Sound Editing, Visual Effects, Writing }}\\ 
+(Notice that features such as Best Animated Movie is ignored)\\
+
+\noindent
+Some of the Used Genres and Plot Keywords:\\
+\textit{\textbf{genre=Romance,	genre=Action,	genre=War,	genre=Thriller,	genre=Biography,	 genre=History,	genre=Drama, keyword=jazz age,	keyword=broadway play,	keyword=gallantry,	keyword=republic,	keyword=casablanca morocco,	keyword=visa,	keyword=boer war,	keyword=longshoreman	, keyword=rose, 	keyword=dangerous job,	keyword=coin toss}}
+
+\subsection{A New Technique for Generating Test and Train Sets}
+There are a number of ways to generate test/train sets. However, not all of them seem reasonable. For example, generating test/train sets using randomness does not seem logical because the number of Best Picture nominees/winners is small compared to the number of movies in our dataset. So, if we are unlucky we might not preserve the same distribution in our test/train sets as the original dataset. \\
+Having that in mind, and based on what some works in the literature, splitting test and train using \textbf{\textit{title year}} feature is a good idea. On simple way is, for example, to including movies after 2000 in our test set and movies before 2000 in our train set. However, we thought that since \textbf{\textit{title year}} is a crucially important feature (as proved with the results of the Pearson's correlation), it is better to have representative of each \textit{period of time} in our test set. In particular, out of every 4 years we put all the movies from one year into our test and the rest into our train set. This is done by computing the year modulo 4; if the remainder is 0 that movie goes to test set, otherwise, it goes into the train set. As a result, our test set contains nearly 25$\%$ of the data.
+
+
+	
+	
+	\section{Methods}
+	This section discusses the methods we used in order to examine whether or not the gathered data were adequate to predict nominees and winners. The idea behind this was the following; we assume that data pulled from various sites (social media and others) regarding movies and their related features should be enough to predict whether or not a movie would get nominated or win. As such, we would use that data and feed it into various classifiers and regressors, then check to see if we achieved a reasonable performance level.
+	
+		\subsection{Classification}
+		
+			\subsubsection{Support Vector Machines}
+			
+			One of our promising candidates for classification and regression is SVM. Are data is perfectly labeled and we can use this supervised learning algorithm to first predict wether a movie is going to be nominated for the Best Picture Award and if so then we can try to see whether it will win the award. We can also use SVM as a regressor to predict the number of awards that a movie is going to win.\\ 
+Our implementation of SVMs relies on the scikit-learn library which provides us with both classifiers (svm.SVC) and regressors (svm.SVR). Once we preprocessed our dataset we can feed it to scikit-learn classifiers.
+
+\subsubsection{Difficulties faced using SVMs}
+\label{svm}
+We faced a number of expected/unexpected problems while working with SVMs:
+\begin{enumerate}
+\item{\textbf{Tuning parameters}} SVMs have a number of parameters. Some of the important ones are \emph{kernel} and \emph{C} which specify type of kernel to be used and penalty parameter in SVM, respectively. In order to overcome this problem we used an exhaustive search and tried a variation of combination of parameters to see which one works better. Based on experiments we found a \textit{poly kernel} or degree 3 is the best fit for our dataset. In particular we use the following settings for SVC and SVR:\\
+svm.SVR(C=0.005,kernel='poly',degree=3)\\
+svm.SVC(C=1.5,kernel='poly',degree=3)
+
+\item{\textbf{Scaling features}} During our research towards optimization of SVM parameters we found out that SVMs are not scale invariant \cite{ref6}. It is recommended that we scale features to the range $[-1, +1]$, with $\mu = 0$ and $\sigma = 1$, before fitting the classifier since the algorithm might not converge if features are not scaled. Also, before doing this we were getting very weird results in terms of accuracy when we used SVM as a regressor.
+
+\item{\textbf{Class weights} We compared the predictions of our classifiers with the true class labels for instances in validation set. In most cases, our classifiers have a tendency to predict more 0s than 1s, m}eaning that they most likely guess that something would not be nominated or would not win best picture award. This might be something natural coming from the distribution of our training set. However, we suppose that it is possible to get slightly better results by manipulating class weights in our classifier.\\
+\textbf{Note:} We did not manipulate class weights since our results were already acceptable and we thought doing so might result in an overfitted model.
+\end{enumerate}
+
+			
+			\subsubsection{Logistic Regression}
+			
+			\subsubsection{Gaussian Naive Bayes}
+			\begin{description}
+          \item[$\bullet$] \bf{Some explanations before starting classification}
+            \end{description}	
+Before describing Gaussian Naïve Bayes Classification and showing results, we must mention that we have eliminated “keyword” features from the original data set and now our data set is consisting of 5043 samples and 87 features. At the first step, we applied PCA (Principle Component Analysis) on data set in order to reduce the dimension of the data (Feature Conditioning, see figure1) because as you know, too many features result in over-fitting. For this purpose, we have implemented a code in MATLAB which is “Whitening-PCA”. A whitening transformation is a linear transformation that transforms a vector of random variables with a known covariance matrix into a set of new variables whose covariance is the identity matrix meaning that they are uncorrelated and all have variance 1\cite{refFoj}. The transformation is called "whitening" because it changes the input vector into a white noise vector. After applying Whitening-PCA, we got a new data set which consists of 5043 samples and 17 features. We want to mention that although PCA’s methods have good results in data mining context but because they combine the features together then it is hard to understand the meaning of the new features. For example let us assume two features in data set: year and genre. 
+Each of them has a specific meaning by itself but a new combined feature such as $\alpha*year+\theta*genre$ is completely meaningless. Anyway, PCA’s methods always help us to regenerate data set in a useful way. 
+	
+			\begin{description}
+          \item[$\bullet$] \bf{An overview on Gaussian Naïve Bayes Classification}
+            \end{description}
+Naive Bayes methods are a set of supervised learning algorithms based on applying Bayes’ theorem with the “naive” assumption of independence between every pair of features. Given a class variable Class and a dependent feature vector $e_1$ through $e_n$ Bayes’ theorem states the following relationship:
+
+\begin{equation} \label{eq1}
+p(Class | e_1,e_2,...,e_n) & = \frac{p(Class)*p(e_1,e_2,...,e_n|Class)}{p(e_1,e_2,...,e_n)} 
+\end{equation}
+Using the naive independence assumption that:
+\begin{equation} \label{eq2}
+p(e_i | Class,e_1,…,e_{(i-1)},e_{(i+1)},…,e_n ) & = p(e_i | Class)} 
+\end{equation}
+
+\begin{equation} \label{eq3}
+p(Class | e_1,e_2,...,e_n) & = \frac{p(Class)*p(e_1,e_2,...,e_n|Class)}{p(e_1,e_2,...,e_n)} 
+\end{equation}
+We will use Gaussian Naïve Bayes when our data set has numerical values. So, Gaussian PDF is applied for calculating each likelihood. The PDF of Gaussian is:
+\begin{equation} \label{eq4}
+p(Class | e_1,e_2,...,e_n) & = \frac{p(Class)*p(e_1,e_2,...,e_n|Class)}{p(e_1,e_2,...,e_n)} 
+\end{equation}
+The Python has provided a classifier by name of GaussianNB() which helps us to prepare a code for GNB classification. In this context, GNB() has four parameters to set which we describe them below:
+	\begin{description}
+          \item[$\bullet$] \bf{Class prior} : probability of each class
+          \item[$\bullet$] \bf{Class count} : number of training samples observed in each class
+          \item[$\bullet$] \bf{Theta } : mean of each feature per class
+          \item[$\bullet$] \bf{Sigma} : variance of each feature per class
+            \end{description}
+This classifier is made up of six functions which calculate mean, variance, likelihoods, online update of Gaussian mean and variance for new data points and so on.
+
+
+			\subsubsection{AdaBoost}
+			\label{adaboost}
+			Adaptive boosting is also one of our best learners that we have tried. What basically this classifier/regressor does is that it takes advantage of a number of weak learners to create a strong learner. As mentioned in \cite{adaboost}, unlike support vector machines and neural nets, the training phase of AdaBoost only selects features which have predictive power; hence, faster running time even when a lot of features are around. But what we were surprised about was the fact that unlike SVMs we did not spend a significant amount of time and trial/error to tune the classifier. In fact, in our very first attempt we got results that were clearly better than that of the SVMs. (We will elaborate on the results later). For regression/classification we used the following setting:\\
+AdaBoostRegressor(DecisionTreeRegressor(max\_depth=20),\\
+n\_estimators=300,random\_state=None)\\
+AdaBoostClassifier(DecisionTreeClassifier(max\_depth=1),\\
+algorithm="SAMME",n\_estimators=200)
+
+In fact, the base estimator that is used here is a Decision Tree. Moreover, we are using the discrete version of the AdaBoost (SAMME) as we are interested in getting class labels as predictions rather than class probabilities.
+			
+			\subsubsection{Perceptrons}
+			Another approach we tried was Perceptrons. Ideally, perceptrons would be able to separate the data linearly, into nominees and non-nominees, and then winners and losers. After performing 10-fold cross-validation on our training set, we were able to tune the parameters to the following:
+			\begin{itemize}
+				\item For nominations, the classifier was regularized using \emph{l2} in order to emphasize the more significant features.
+				\item For wins, the classifier was regularized using \emph{l1}.
+			\end{itemize}
+			These two settings showed the most promising results during cross-validation.
+			These were the best tuning parameters possible given the data's non-linear distribution.
+			
+			\subsubsection{Neural Networks (MLPs)}
+			The last approach in this section was neural nets (or multi-layered perceptrons) as they are called in \emph{scikit-learn}. These were also run through cross-validation (10-fold), and tuned for the best possible performance.
+			\begin{itemize}
+				\item For nominations, the network consists of 1 hidden layer of 200 nodes. This yielded the best results during cross-validation.
+				\item For wins, the network size was increased to accommodate two hidden layers of 200 and 250 nodes respectively.
+			\end{itemize}
+			
+		\subsection{Regression}
+			
+			\subsubsection{Support Vector Regressors (SVRs)}
+			Covered in \ref{svm}.
+			
+			\subsubsection{AdaBoost}
+			Covered in \ref{adaboost}.			
+			
+			\subsubsection{Linear Regression}
+			For linear regression, and after experimenting with all possible variations of the tuning parameters, the best possible fit was with its default settings, i.e. $fit_intercept=True$, and $normalize=False$. The $normalize$ setting was set to $False$ mainly due to the fact that the dataset was already scaled earlier on the the data preprocessing step. Linear regression, much like the perceptron, would try to estimate a line that runs closest to as much as possible of the points in the set, and use the equation from that estimated line in order to predict the dependent variable (in this case, the number of awards).
+	
+	\section{Results}
+	\subsection{Gaussian Naive Bayes}
+By applying GaussianNB()  to our code which contains 5043 samples and 87 features, we got 0.901 accuracy. After that we have tried to load dataset which has 17 features (provided by Whitening-PCA) and we got 0.9312 accuracy. These results are shown in below:	
+\begin{figure}
+\includegraphics[scale=.26]{figfoj1.png}
+ \caption{Accuracy in two modes}
+\label{fig_foj1}
+\end{figure}
+In figure \ref{fig_foj2} shows the efficacy of different portion of test data used with different folds versus correct classification rate for GNB method. As we can see, the maximum value for CCR obtained with fold 3.5 percent for this method. 
+\begin{figure}
+\includegraphics[scale=.38]{figfoj2.png}
+ \caption{Accuracy with different fold percent of test data}
+\label{fig_foj2}
+\end{figure}
+
+Another challenging issue is to finding the best threshold for the best correlation (0.1) which is shown in figure \ref{fig_foj3}:
+\begin{figure}
+\includegraphics[scale=.38]{figfoj3.png}
+ \caption{Accuracy with different fold percent of test data}
+\label{fig_foj3}
+\end{figure}
+Here ( Figure \ref{fig_foj4} ) is the results of GNB classification when we did not apply PCA. As we explained before, this classifier is trying to figure out that a movie is winning the best picture or nominated for the best picture (nominee classifier). As we can see, the high precision means low amount of false positive which means if a movie will win in the future and also our classifier has proved this fact.
+
+\begin{figure}
+\includegraphics[scale=.35]{foj4.png}
+ \caption{Evaluation of GNB }
+\label{fig_foj4}
+\end{figure}
+
+In the following, we applied Forward Selection(FS) and Backward Elimination(BE) in order to find the number of the best features. We provided two different codes in python which they simulate FS and BE method. After applying these methods, we found the number of best features as the following in the Figure \ref{fig_foj5}.
+
+\begin{figure}
+\includegraphics[scale=.35]{foj5.png}
+ \caption{Evaluation of GNB in terms of best features}
+\label{fig_foj5}
+\end{figure}
+
+\begin{figure}
+\includegraphics[scale=.4]{foj6.png}
+ \caption{Evaluation of GNB with PCA}
+\label{fig_foj6}
+\end{figure}
+By knowing these facts, we can evaluate GNB classifier with these selected features as the above. As you see, FS method returned 21 features which supposed to obtain the best CCR among GNB and GNB+PCA. By feeding FS’s features and BE’s features to GNB classifier, we got the results as the following in the Figure \ref{fig_foj6}.
+
+It is obvious that in terms of accuracy, PCA works better than FS and BE in this context. GNB evaluation with Forward Selection method in the Figure \ref{fig_foj7}.
+
+\begin{figure}
+\includegraphics[scale=.35]{foj7.png}
+ \caption{Evaluation of GNB with FS}
+\label{fig_foj7}
+\end{figure}
+GNB evaluation with Backward Elimination method in the Figure \ref{fig_foj8}.
+
+
+\begin{figure}
+\includegraphics[scale=.35]{foj8.png}
+ \caption{Evaluation of GNB with BE}
+\label{fig_foj8}
+\end{figure}
+
+	\section{Discussion}
+	
+	
+	\section{Contributions}
+	
+	
+	\begin{thebibliography}{1}
+
+\bibitem{IEEEhowto:kopka}
+H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
+  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+  
+ \bibitem{ref6} \url{http://www.economist.com/blogs/economist-explains/2015/01/economist-explains-14}, Accessed on 10/02/16
+\bibitem{ref7} \url{https://www.kaggle.com/datasets?sortBy=hottest&group=featured&search=imdb}, Accessed on 10/02/16
+\bibitem{ref8} \url{https://www.youtube.com/watch?v=qhfxo8xPNGU}, Accessed on 10/03/16
+\bibitem{ref1}  \url{http://insights.principa.co.za/data-scientists-predict-oscar-winners} (February 2016)
+\bibitem{ref2} Krauss, Jonas, Stefan Nann, Daniel Simon, Peter A. Gloor, and Kai Fischbach.``Predicting Movie Success and Academy Awards through Sentiment and Social Network Analysis." In ECIS, pp. 2026-2037. 2008.
+\bibitem{ref3}  \url{http://maxmelnick.com/2016/05/18/predicting-oscar-nominations.html} (May 2016)
+\bibitem{ref4} Barber, Stephen, Kasey Le, and Sean O’Donnell.``Predicting the 85th Academy Awards." (2012).
+\bibitem{ref5} \url{https://blog.nycdatascience.com/student-works/machine-learning/movie-rating-prediction/}, Accessed on 10/03/16
+\bibitem{ref6} \url{http://scikit-learn.org/stable/modules/svm.html}
+\bibitem{refFoj} \url{Kessy, Agnan, Alex Lewin, and Korbinian Strimmer. "Optimal whitening and decorrelation." arXiv preprint arXiv:1512.00809 (2015).}
+\bibitem{refCreator} \url{https://blog.nycdatascience.com/student-works/machine-learning/movie-rating-prediction/}
+\bibitem{adaboost} \url{https://en.wikipedia.org/wiki/AdaBoost}
+\end{thebibliography}
+	
+\end{document}
