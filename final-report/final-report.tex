@@ -222,7 +222,40 @@ svm.SVC(C=1.5,kernel='poly',degree=3)
 			
 			
 			\subsubsection{Gaussian Naive Bayes}
-			
+			\begin{description}
+          \item[$\bullet$] \bf{Some explanations before starting classification}
+            \end{description}	
+Before describing Gaussian Naïve Bayes Classification and showing results, we must mention that we have eliminated “keyword” features from the original data set and now our data set is consisting of 5043 samples and 87 features. At the first step, we applied PCA (Principle Component Analysis) on data set in order to reduce the dimension of the data (Feature Conditioning, see figure1) because as you know, too many features result in over-fitting. For this purpose, we have implemented a code in MATLAB which is “Whitening-PCA”. A whitening transformation is a linear transformation that transforms a vector of random variables with a known covariance matrix into a set of new variables whose covariance is the identity matrix meaning that they are uncorrelated and all have variance 1\cite{refFoj}. The transformation is called "whitening" because it changes the input vector into a white noise vector. After applying Whitening-PCA, we got a new data set which consists of 5043 samples and 17 features. We want to mention that although PCA’s methods have good results in data mining context but because they combine the features together then it is hard to understand the meaning of the new features. For example let us assume two features in data set: year and genre. 
+Each of them has a specific meaning by itself but a new combined feature such as $\alpha*year+\theta*genre$ is completely meaningless. Anyway, PCA’s methods always help us to regenerate data set in a useful way. 
+	
+			\begin{description}
+          \item[$\bullet$] \bf{An overview on Gaussian Naïve Bayes Classification}
+            \end{description}
+Naive Bayes methods are a set of supervised learning algorithms based on applying Bayes’ theorem with the “naive” assumption of independence between every pair of features. Given a class variable Class and a dependent feature vector $e_1$ through $e_n$ Bayes’ theorem states the following relationship:
+
+\begin{equation} \label{eq1}
+p(Class | e_1,e_2,...,e_n)  = \frac{p(Class)*p(e_1,e_2,...,e_n|Class)}{p(e_1,e_2,...,e_n)} 
+\end{equation}
+Using the naive independence assumption that:
+\begin{equation} \label{eq2}
+p(e_i | Class,e_1,…,e_{(i-1)},e_{(i+1)},…,e_n )  = p(e_i | Class)
+\end{equation}
+
+\begin{equation} \label{eq3}
+p(Class | e_1,e_2,...,e_n)  = \frac{p(Class)*\prod_{i=1} ^n p(e_i|Class)}{p(e_1,e_2,...,e_n)} 
+\end{equation}
+We will use Gaussian Naïve Bayes when our data set has numerical values. So, Gaussian PDF is applied for calculating each likelihood. The PDF of Gaussian is:
+\begin{equation} \label{eq4}
+Likelihood: p(e_i | Class)  =\frac{1}{\sqrt{2\pi \sigma^2}} e^{-\frac{(e_i-\mu)^2 }{2\sigma^2}}
+\end{equation}
+The Python has provided a classifier by name of GaussianNB() which helps us to prepare a code for GNB classification. In this context, GNB() has four parameters to set which we describe them below:
+	\begin{description}
+          \item[$\bullet$] \bf{Class prior} : probability of each class
+          \item[$\bullet$] \bf{Class count} : number of training samples observed in each class
+          \item[$\bullet$] \bf{Theta } : mean of each feature per class
+          \item[$\bullet$] \bf{Sigma} : variance of each feature per class
+            \end{description}
+This classifier is made up of six functions which calculate mean, variance, likelihoods, online update of Gaussian mean and variance for new data points and so on.
 			\subsubsection{AdaBoost}
 			\label{adaboost}
 			Adaptive boosting is also one of our best learners that we have tried. What basically this classifier/regressor does is that it takes advantage of a number of weak learners to create a strong learner. As mentioned in \cite{adaboost}, unlike support vector machines and neural nets, the training phase of AdaBoost only selects features which have predictive power; hence, faster running time even when a lot of features are around. But what we were surprised about was the fact that unlike SVMs we did not spend a significant amount of time and trial/error to tune the classifier. In fact, in our very first attempt we got results that were clearly better than that of the SVMs. (We will elaborate on the results later). For regression/classification we used the following setting:\\
