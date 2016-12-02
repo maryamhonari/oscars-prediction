@@ -23,7 +23,6 @@
 			Ali Mashreghi
 		}
 		\IEEEauthorblockA{
-			\IEEEauthorrefmark{1}
 			University of Victoria, Victoria, Canada
 		}
 	}
@@ -230,19 +229,35 @@ algorithm="SAMME",n\_estimators=200)
 In fact, the base estimator that is used here is a Decision Tree. Moreover, we are using the discrete version of the AdaBoost (SAMME) as we are interested in getting class labels as predictions rather than class probabilities.
 			
 			\subsubsection{Perceptrons}
-			Another approach we tried was Perceptrons. Ideally, perceptrons would be able to separate the data linearly, into nominees and non-nominees, and then winners and losers. After performing 10-fold cross-validation on our training set, we were able to tune the parameters to the following:
+			Another approach we tried was Perceptrons. Ideally, perceptrons would be able to separate the data linearly \cite{perceptron}, into nominees and non-nominees, and then winners and losers. After performing 10-fold cross-validation on our training set, we were able to tune the parameters to the following:
 			\begin{itemize}
-				\item For nominations, the classifier was regularized using \emph{l2} in order to emphasize the more significant features.
-				\item For wins, the classifier was regularized using \emph{l1}.
+				\item For nominations, the classifier was regularized using \emph{l2} with the default value of 0.0001 in order to emphasize the more significant features.
+				\item For wins, the classifier was regularized using \emph{l1} with a much smaller value 0.00001 than the default.
 			\end{itemize}
 			These two settings showed the most promising results during cross-validation.
 			These were the best tuning parameters possible given the data's non-linear distribution.
 			
 			\subsubsection{Neural Networks (MLPs)}
-			The last approach in this section was neural nets (or multi-layered perceptrons) as they are called in \emph{scikit-learn}. These were also run through cross-validation (10-fold), and tuned for the best possible performance.
+			The last approach in this section was neural nets \cite{anns} (or multi-layered perceptrons) as they are called in \emph{scikit-learn} \cite{skl-anns}. These were also run through cross-validation (10-fold), and tuned for the best possible performance.
 			\begin{itemize}
-				\item For nominations, the network consists of 1 hidden layer of 200 nodes. This yielded the best results during cross-validation.
-				\item For wins, the network size was increased to accommodate two hidden layers of 200 and 250 nodes respectively.
+				\item Net Structure:
+				\begin{itemize}
+					\item For nominations, the network consists of 1 hidden layer of 200 nodes. This yielded the best results during cross-validation.
+					\item For wins, the network size was increased to accommodate two hidden layers of 200 and 250 nodes respectively.
+				\end{itemize}
+				\item Activation Function:
+					\newline
+					The most effective activation function after cross-validation was found to be the default function \emph{relu} for both nominations and wins.
+				\item Solver:
+					\begin{itemize}
+						\item For nominations, the most effective solver was found to be the stochastic gradient descent solver \emph{sgd}.
+						\item For wins, the most effective solver was found to be the default solver \emph{adam}.
+					\end{itemize}
+				\item Regularization:
+					\begin{itemize}
+						\item For nominations, by keeping the regularization term \emph{alpha} at the default, we obtained the best average F1-score.
+						\item For wins, we obtained the best results by increasing the value of the regularization term from its default 0.0001 to 0.001.
+					\end{itemize}
 			\end{itemize}
 			
 		\subsection{Regression}
@@ -283,6 +298,9 @@ H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
 \bibitem{refFoj} \url{Kessy, Agnan, Alex Lewin, and Korbinian Strimmer. "Optimal whitening and decorrelation." arXiv preprint arXiv:1512.00809 (2015).}
 \bibitem{refCreator} \url{https://blog.nycdatascience.com/student-works/machine-learning/movie-rating-prediction/}
 \bibitem{adaboost} \url{https://en.wikipedia.org/wiki/AdaBoost}
+\bibitem{perceptron} Han, J., Pei, J. and Kamber, M., 2011. \emph{Data mining: concepts and techniques}. Elsevier.
+\bibitem{anns} \url{https://en.wikipedia.org/wiki/Artificial_neural_network} accessed on 12/01/2016
+\bibitem{skl-anns} \url{http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html} accessed on 12/01/2016
 \end{thebibliography}
 	
 \end{document}

@@ -137,12 +137,14 @@ if args['test']:
 
 # Prepare Classifiers:
 classifiers_nomination = [
-                Perceptron(penalty='l2'),
-                MLPClassifier(hidden_layer_sizes=(200,)),
+                Perceptron(penalty='l2', alpha=0.0001),
+                MLPClassifier(hidden_layer_sizes=(200,), alpha=0.0001,
+                              activation='relu', solver='sgd'),
         ]
 classifiers_win = [
-                Perceptron(penalty='l1'),
-                MLPClassifier(hidden_layer_sizes=(200, 250, )),
+                Perceptron(penalty='l1', alpha=0.00001),
+                MLPClassifier(hidden_layer_sizes=(200, 250, ), alpha=0.001,
+                              activation='relu', solver='adam'),
         ]
 regressors = [
                 LinearRegression(),
