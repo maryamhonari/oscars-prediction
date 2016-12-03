@@ -4,6 +4,8 @@
 \usepackage{graphicx}
 \usepackage{pbox}
 \usepackage{caption}
+\usepackage{textcomp}
+
 
 \hyphenation{op-tical net-works semi-conduc-tor}
 \newcommand\MYhyperrefoptions{bookmarks=true,bookmarksnumbered=true,
@@ -50,12 +52,12 @@
 \item We applied a rather new technique based on modulo to generate test/train set.
 \end{enumerate}
 	
-	\section{Introduction}
-	The Academy Awards, or "Oscars", is an annual awards ceremony to recognize excellence in cinematic achievements of a previous year's movies. These awards have been presented from 1929 and are known to mark distinguished performance in different categories which can bring fanfare.   
 	
-	One of the most controversial Oscar awards is the Best picture.
-	Thirty-three of the films on the American Film Institute’s 100 Greatest Films were Academy Award Best Picture Winners.
-	Seventy-five of the films were Academy Award Best Picture Nominees\cite{maryamref20}.
+	\section{Introduction}
+	The Academy Awards, or ``Oscars", is an annual awards ceremony to recognize excellence in cinematic achievements of a previous year's movies. These awards have been presented from 1929 and are known to mark distinguished performance in different categories which can bring fanfare.   
+	
+	One of the most controversial Oscar awards is the Best Picture.
+	It is worthwhile to mention that 33 of the films on the American Film Institute\textquotesingle s 100 greatest films were Best Picture winners. Furthermore, 75 of these films were  Best Picture nominees \cite{maryamref20}.
 	This project attempts to examine if a highly popular movie is more likely to be nominated for or win an award.  We have implemented a number of classifiers to predict whether a movie will be nominated or win an award. The important questions that we intend to answer in this project are:	
 	\begin{enumerate}
 		\item Is a movie going to be nominated for Best Picture Award?
@@ -68,22 +70,22 @@
 	This report is structured as follows: first an overview of the literature will be provided in the related work section. Afterwards, we will go over how we gathered and preprocessed our dataset. Next, we will discuss the methods used to classify and predict nominations and wins. Afterwards, the results will be illustrated and discussed along with what we hope to accomplish given more time.
 	
 	\section{Related Work}
-	Some previous work has been done on predicting Academy Awards. A prediction was made for best picture, best actor, best actress and best director awards based on winning other awards, critics' ratings, bookie odds, genre and box office revenue\cite{ref1}.Since they were a business company we could not access their methods and data.
-Another approach was done by sentiment analysis of IMDB discussion forums and weighing users based on their network positions. They were able to predict nine Oscar nominations correctly two months before announcement\cite{ref2}.We decided not to include text analysis into our project.
-In one of the previous works, they collected the data by scraping Box Office Mojo and joining them with collected data from Open Movie Database (OMDB) API. For the sake of simplicity, they did data reduction and the final dataset had 516 movies of the original dataset which was gathered from Box Office Mojo with six major features including: Season, Rating, Genre, Total previous nominations, Metacritic Score, and Opening weekend gross. By applying the linear regression method, they tried to predict the number of Oscar nominations\cite{ref3}. We applied linear regression to our own dataset which has more movies and features.
-Another approach which is related to our contribution is Academy Award Prediction. In this work, they tried to predict the 85th academy awards by focusing on aggregated rating, such as from audiences and critics on Rotten Tomatoes and IMDB. The data set was made up of a list of movies that have received at least a nomination in Best Film, Best Director, Best Actor or Actress groups of the Academy Awards. In this approach, they applied a couple of learning models. It seems for Best Actress results, SVM and Feature selected SVM; for Best Actor, multinomial naive bayes; for Best Director and for Best Picture, logistic regression and feature selected LR produced the best overall accuracy\cite{ref4}.
-There is another study by David Kaplan which played with more smart features about film personnel and their Resume, genre and records in other award competition. Some of those features are:
+	A number of works in the literature have focused on predicting Academy Awards results (in various categories) \cite{ref1, ref2, ref3}. Predictions were made for best picture, best actor, best actress and best director awards based on winning other awards, critics' ratings, bookie odds, genre and box office revenue \cite{ref1}. Since this work was done by a business company we could not access their methods and data.\\
+Another approach was done by sentiment analysis of IMDB discussion forums and weighing users based on their network positions. They were able to predict nine Oscar nominations correctly two months before announcement \cite{ref2}. However, we decided not to include text analysis into our project.\\
+In one of the previous works, they collected the data by scraping Box Office Mojo and joining them with collected data from Open Movie Database (OMDB) API. For the sake of simplicity, they did data reduction and the final dataset had 516 movies of the original dataset which was gathered from Box Office Mojo with six major features including: Season, Rating, Genre, Total previous nominations, Meta-critic Score, and Opening weekend gross. By applying the linear regression method, they tried to predict the number of Oscar nominations \cite{ref3}. We applied linear regression to our own dataset which has more movies and features.\\
+In \cite{ref4} authors tried to predict the 85th academy awards by focusing on aggregated rating, such as from audiences and critics on Rotten Tomatoes and IMDB. (This is somewhat similar to what we are doing in this project). The dataset was made up of a list of movies that have received at least one nomination in Best Picture, Best Director or Best Actor/Actress categories. They applied a couple of learning models. According to their results, for Best Actress, SVM and Feature Selected SVM; for Best Actor, Multinomial Naive Bayes; for Best Director and for Best Picture, Logistic Regression (LR) and Feature Selected LR produced the best overall accuracy.\\
+There is another study in \cite{ref5} which played with more smart features about film personnel and their resume, genre of the movie and records in other award competitions. Some of those features are:
 \begin{description}
   \item[$\bullet$ ] If the film director won the DGA (Directors Guild of America) award
   \item[$\bullet$ ] Number of Best Actor Awards that the cast of film has previously won
-  \item[$\bullet$] Number of Best Director awards for which the director of film has been nominated
+  \item[$\bullet$] Number of Best Director Awards for which the director of film has been nominated
 \end{description}
-It also showed the probability of winning Best Picture Award based on some hypothetical films with seven different sets of values. E.g. If chance of winning for film A is 8.8\% and its director wins the DGA Award, the chance increases to 96.7\%. He used a couple of logistic regression models with a combination of different features. The best result was 97.7\% accuracy on predicting whether a film wins Best picture award or not\cite{ref5}.
-Although there are many approaches that have been done in award-prediction, only a few of them have paid attention to Oscar Prediction. In this project, we are going to present our contribution by using a dataset and learning methods in order to predict oscars winners and nominations, based on which we will assess whether or not social media data is adequate for this task or not.
+It also showed the probability of winning Best Picture Award based on some hypothetical films with seven different sets of values. For example, If chance of winning for film A is 8.8\% and its director wins the DGA Award, the chance increases to 96.7\%. He used a couple of Logistic Regression models with a combination of different features. The best result was 97.7\% accuracy on predicting whether a film wins the Best Picture or not.\\
+Although there are many approaches that have been done in award-prediction, only a few of them focused on Oscar Prediction. In this project, we are going to present our contribution by using a dataset and learning methods in order to predict oscars winners and nominations, based on which we will assess whether or not social media data is sufficient for this task or not.
 	
 	
 	\section{Data Gathering and Description}
-As mentioned previously, our main dataset was a collection roughly 5000 movies from Kaggle created by \emph{Mr. Chuan Sun} \cite{refCreator}. However, since we needed some features to be able to predict Oscar nominees and winners we started gathering historical data. To do this, we wrote a crawler in Java which went through the search results of the official Oscars' website (\url{http://www.oscars.org}) and collected all necessary information on winners and nominees from as early as 1916. Our crawler does that simply by parsing the html pages returned as search result. It also gathers the names of people who won a specific award.\\
+As mentioned previously, our main dataset was a collection of roughly 5000 movies from Kaggle created by \emph{Chuan Sun} \cite{refCreator}. However, since we needed some features to be able to predict Oscar nominees and winners we started gathering historical data. To do this, we wrote a crawler in Java which went through the search results of the official Oscars' website (\url{http://www.oscars.org}) and collected all necessary information on winners and nominees from as early as 1916. Our crawler does that simply by parsing the html pages returned as search result. It also gathers the names of people who won a specific award.\\
 Important features that we added were whether each movie in the dataset was nominated for each category or not. Also, we added features that tell us whether the movie has won a specific award or not (Figure \ref{fig4}). Based on this, we added a column which specifies the number of awards won by a movie. However, when we want to predict if a movie is going to be nominated for Best Picture we ignore all other features regarding nomination. The reason is that this kind of prediction is supposed to be used on the time before nominees' names are released. Similarly, when we aim at predicting if a movie is going to win an award or not, we ignore features regarding winning other awards. The reason again is that this classifier is supposed to be used before Oscars' ceremony. The same goes for predicting number of awards for which we ignore the columns that say whether the movie has won an award.\\
 \textbf{Note:} Though we never use \emph{Award Winning Features}, we still include them in the dataset to facilitate the process of analyzing our results. For example, when we want to see the information on some movie that is always classified wrong we may use these information to get a better understanding of our data.\\
 
@@ -261,63 +263,58 @@ svm.SVC(C=1.5,kernel='poly',degree=3)
 			
 			
 			\subsubsection{Gaussian Naive Bayes}
-By applying GaussianNB()  to our code which contains 5043 samples and 87 features, we got 0.901 accuracy. After that we have tried to load dataset which has 17 features (provided by Whitening-PCA) and we got 0.9312 accuracy. These results are shown in figure \ref{fig_foj1}.	
-\begin{figure}
+By applying GaussianNB to our code which contains 5043 samples and 87 features, we got 0.901 accuracy. After that we have tried to load dataset which has 17 features (provided by Whitening-PCA) and we got 0.9312 accuracy. These results are shown in figure \ref{fig_foj1}.	
+\begin{table}
 \includegraphics[scale=.26]{figfoj1}
  \caption{Accuracy in two modes}
 \label{fig_foj1}
-\end{figure}
-Figure \ref{fig_foj2} shows the efficacy of different portions of the validation data used with different folds versus correct classification rate for the GNB method. As we can see, the maximum value for CCR obtained with folds is 3.5\% for this method. 
+\end{table}
+
+Figure \ref{fig_foj2} shows the efficacy of different portions of the validation data used with different folds versus Correct Classification Rate (CCR) for the GNB method. As we can see, the maximum value for CCR obtained with folds is 3.5\% for this method. 
 \begin{figure}
 \includegraphics[scale=.38]{figfoj2}
  \caption{Accuracy with different fold percent of test data}
 \label{fig_foj2}
 \end{figure}
 
-Another challenging issue is to find the best threshold for the best correlation (0.1) which is shown in figure \ref{fig_foj3}.
-\begin{figure}
-\includegraphics[scale=.38]{figfoj3}
- \caption{Accuracy with different fold percent of test data}
-\label{fig_foj3}
-\end{figure}
-Here ( Figure \ref{fig_foj4} ) are the results of GNB classification when we did not apply PCA. As we explained before, this classifier is trying to figure out that a movie is winning the best picture or nominated for the best picture (nominee classifier). As we can see, the high precision means a low amount of false positivs which indicates if a movie will win in the future and also our classifier has proved this fact.
+In table \ref{fig_foj4} we see the results of GNB classification when we did not apply PCA. As we explained before, this classifier is trying to figure out that a movie is going to win/be nominated for the Best Picture.
 
-\begin{figure}
+\begin{table}
 \includegraphics[scale=.35]{foj4}
  \caption{Evaluation of GNB }
 \label{fig_foj4}
-\end{figure}
+\end{table}
 
-In the following, we applied Forward Selection(FS) and Backward Elimination(BE) in order to find the best features. We provided two different scripts in python which simulate FS and BE method. After applying these methods, we found the number of best features as the following in the figure \ref{fig_foj5}.
+In the following, we applied Forward Selection (FS) and Backward Elimination (BE) in order to find the best features. We provided two different scripts in python which simulate FS and BE method. After applying these methods, we found the number of best features as the following in the figure \ref{fig_foj5}.
 
-\begin{figure}
+\begin{table}
 \includegraphics[scale=.35]{foj5}
  \caption{Evaluation of GNB in terms of best features}
 \label{fig_foj5}
-\end{figure}
+\end{table}
 
-\begin{figure}
+\begin{table}
 \includegraphics[scale=.4]{foj6}
  \caption{Evaluation of GNB with PCA}
 \label{fig_foj6}
-\end{figure}
-By knowing these facts, we can evaluate the GNB classifier with these selected features as the above. As you see, FS method returned 21 features which supposed to obtain the best CCR among GNB and GNB+PCA. By feeding FS's features and BE's features to the GNB classifier, we got the results as shown in figure \ref{fig_foj6}.
+\end{table}
+By knowing these facts, we can evaluate the GNB classifier with these selected features as the above. As you see, FS method returned 21 features which supposed to obtain the best CCR among GNB and GNB+PCA. By feeding FS's features and BE's features to the GNB classifier, we got the results as shown in table \ref{fig_foj6}.
 
-It is obvious that in terms of accuracy, PCA works better than FS and BE in this context. GNB is evaluated with the forward selection method in figure \ref{fig_foj7}.
+It is obvious that in terms of accuracy, PCA works better than FS and BE in this context. GNB is evaluated with the forward selection method in table \ref{fig_foj7}.
 
-\begin{figure}
+\begin{table}
 \includegraphics[scale=.35]{foj7}
  \caption{Evaluation of GNB with FS}
 \label{fig_foj7}
-\end{figure}
-GNB evaluation with Backward Elimination method in the Figure \ref{fig_foj8}.
+\end{table}
+GNB evaluation with Backward Elimination method in the table \ref{fig_foj8}.
 
 
-\begin{figure}
+\begin{table}
 \includegraphics[scale=.35]{foj8}
  \caption{Evaluation of GNB with BE}
 \label{fig_foj8}
-\end{figure}
+\end{table}
 
 	\subsubsection{AdaBoost}
 			\label{adaboost}
